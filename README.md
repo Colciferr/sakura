@@ -1,5 +1,11 @@
 # Sakura
 
+To Dos: 
+- [x] Outline project goal and specifications 
+- [x] Stand up repo `Colciferr/sakura`
+- [ ] Build Parser - reads Sakura code fence, outputs a JSON tree structure
+- [ ] Build Renderer - takes the JSON, outputs the `|`, `├──`, `└──` formatted tree
+
 ## Overview
 
 Structure file systems or other systems needing tree-like structures before its built out in your system. Use output for color-coded and organized tree diagrams for project docs, presentations, etc. 
