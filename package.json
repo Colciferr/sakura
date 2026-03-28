@@ -1,0 +1,25 @@
+{
+  "name": "sakura",
+  "version": "1.0.0",
+  "description": "To Dos: \r - [x] Outline project goal and specifications \r - [x] Stand up repo `Colciferr/sakura`\r - [ ] Build Parser - reads Sakura code fence, outputs a JSON tree structure\r - [ ] Build Renderer - takes the JSON, outputs the `|`, `├──`, `└──` formatted tree",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Colciferr/sakura.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Colciferr/sakura/issues"
+  },
+  "homepage": "https://github.com/Colciferr/sakura#readme",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
+}
