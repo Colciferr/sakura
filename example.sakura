@@ -1,0 +1,8 @@
+target: 'C:/users'
+    home/
+        documents/
+            notes.txt
+            readme.md
+        scripts/
+            deploy.ps1
+            config.json
