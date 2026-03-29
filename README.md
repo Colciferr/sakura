@@ -16,6 +16,48 @@ To Dos:
 
 Structure file systems or other systems needing tree-like structures before its built out in your system. Use output for color-coded and organized tree diagrams for project docs, presentations, etc. 
 
+## Installation
+
+### Prerequisites
+- Node.js v18+
+- npm
+
+### Setup
+1. Clone the repo
+```
+   git clone https://github.com/Colciferr/sakura.git
+   cd sakura
+```
+2. Install dependencies
+```
+   npm install
+```
+3. Build
+```
+   npm run build
+```
+4. Link globally
+```
+   npm link
+```
+
+## Usage
+
+### CLI
+```
+sakura
+```
+Opens the Sakura REPL. Type your tree structure, then:
+- `:render` — output the tree
+- `:clear` — reset the input
+- `:quit` — exit
+
+### File mode
+```
+sakura <path-to-file>
+```
+Renders a `.sakura` file directly to the terminal.
+
 ## Syntax rules 
 
 | keyword | mandatory | description | example | notes |

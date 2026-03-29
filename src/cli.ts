@@ -1,3 +1,4 @@
+#!/usr/bin/env mode
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { sakura } from './index';
