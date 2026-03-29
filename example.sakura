@@ -1,8 +1,44 @@
-target: 'C:/users'
-    home/
-        documents/
-            notes.txt
-            readme.md
-        scripts/
-            deploy.ps1
-            config.json
+~/.claude/
+    CLAUDE.md
+    settings.json
+
+---
+target: "C:\Projects\"
+Claude/
+    .claude/
+        agents/
+            code-reviewer.md
+            core-developer.md
+            ...
+        rules/
+            powershell-standards.md
+            testing-standards.md
+            ...
+        skills/
+            spawn-team/
+                SKILL.md
+                ...
+            work-issues/
+                SKILL.md
+            code-explainer/
+                SKILL.md
+            ...
+        ...
+    ...
+---
+target: "C:\Projects\"
+Claude/
+    PatchManager/
+        .claude/
+            rules/
+        CLAUDE.md
+        settings.json
+        ...
+    PatchDeployer/
+        .claude/
+        rules/
+            more-testing-standards.md
+            ...
+        CLAUDE.md
+        settings.json
+    ...
