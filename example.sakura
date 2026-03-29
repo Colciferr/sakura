@@ -1,44 +1,19 @@
-~/.claude/
-    CLAUDE.md
-    settings.json
-
----
-target: "C:\Projects\"
-Claude/
-    .claude/
-        agents/
-            code-reviewer.md
-            core-developer.md
-            ...
-        rules/
-            powershell-standards.md
-            testing-standards.md
-            ...
-        skills/
-            spawn-team/
-                SKILL.md
-                ...
-            work-issues/
-                SKILL.md
-            code-explainer/
-                SKILL.md
-            ...
+target: C:\temp
+root/
+    sub folder/
+        text.txt
+        python.py
+        config.json
+        config.xml
+    sub folder/
+        settings.yang
+        settings.config
         ...
     ...
 ---
-target: "C:\Projects\"
-Claude/
-    PatchManager/
-        .claude/
-            rules/
-        CLAUDE.md
-        settings.json
-        ...
-    PatchDeployer/
-        .claude/
-        rules/
-            more-testing-standards.md
-            ...
-        CLAUDE.md
-        settings.json
-    ...
+target: root\sub folder
+root2/
+    markdown.md
+    doc.pdf
+    unknown
+    tree.sakura

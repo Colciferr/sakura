@@ -1,10 +1,11 @@
+import { ping } from 'undici-types';
 import { SakuraTree, TreeNode } from './treeBuilder';
 
 export type RenderMode = 'ansi' | 'html';
 
 // ANSI color codes
 const ANSI = {
-  gold:       '\x1b[33m',
+  gold:       '\x1b[38;5;214m',
   yellow:     '\x1b[93m',
   white:      '\x1b[37m',
   blue:       '\x1b[34m',
@@ -12,18 +13,22 @@ const ANSI = {
   purple:     '\x1b[35m',
   cyan:       '\x1b[96m',
   gray:       '\x1b[90m',
+  red:        '\x1b[31m',
+  pink:       '\x1b[38;5;213m',
   reset:      '\x1b[0m'
 };
 
 // HTML color values
 const HTML_COLORS = {
-  gold:       '#ffd900',
+  gold:       '#FFA726',
   yellow:     '#fffc32',
   white:      '#FFFFFF',
   blue:       '#4FC3F7',
   green:      '#81C784',
   purple:     '#CE93D8',
   cyan:       '#80DEEA',
+  red:        '#E57373',
+  pink:       '#f59aff',
   gray:       '#AAAAAA'
 };
 
@@ -39,6 +44,8 @@ function getColor(node: TreeNode, isRoot: boolean): ColorName {
   if (['json', 'xml'].includes(ext)) return 'green';
   if (['config', 'yang'].includes(ext)) return 'cyan';
   if (ext === 'md') return 'purple';
+  if (ext === 'pdf') return 'red';
+  if (ext === 'sakura') return 'pink';
   if (ext === 'txt') return 'white';
   return 'gray';
 }

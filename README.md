@@ -85,6 +85,8 @@ Renders a `.sakura` file directly to the terminal.
 | .json/.xml | green |
 | .config/.yang | cyan | 
 | .md | purple |
+| .pdf | dark red |
+| .sakura | pink |
 | (default) | gray |
 
 ## Valid examples 
