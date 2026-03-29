@@ -297,5 +297,5 @@ scripts/
 ### Color map edge cases
 - File with multiple dots, such as `archive.tar.gz`
     - Last extension wins.
-- Files with no extension default to white. 
-- Extensions not in color map default to white.
+- Files with no extension default to gray. 
+- Extensions not in color map default to gray.
