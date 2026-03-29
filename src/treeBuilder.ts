@@ -1,0 +1,104 @@
+import { Token, TokenType } from "./tokenizer";
+
+export type NodeType = 'directory' | 'file' | 'ellipsis';
+
+export interface TreeNode {
+    type: NodeType;
+    name: string;
+    extension?: string;
+    children: TreeNode[];
+}
+
+export interface SakuraTree {
+    target?: string;
+    children: TreeNode[];
+}
+
+export interface BuildError {
+    message: string;
+    line?: number;
+}
+
+export interface BuildResult {
+    trees: SakuraTree[];
+    errors: BuildError[];
+}
+
+export function buildTrees(tokens: Token[]): BuildResult {
+    const trees: SakuraTree[] = [];
+    const errors: BuildError[] = [];
+
+    let currentTree: SakuraTree = { children: [] };
+    const stack: { node: TreeNode; depth: number }[] = [];
+
+    for (const token of tokens) {
+        switch (token.type) {
+
+            // skipped cases
+            case 'COMMENT':
+            case 'BLANK':
+                break;
+            
+            // stamped onto the current tree
+            case 'TARGET':
+                currentTree.target = token.name
+                    .replace(/^target:\s*/, '').trim()
+                    .replace(/^['"]|['"]$/g, '')
+                    .trim();
+                break;
+
+            // seals the current tree, pushes it, & resets both tree and stack for the next block
+            case 'SEPARATOR':
+                if(currentTree.children.length > 0) {
+                    trees.push(currentTree);
+                }
+                currentTree = { children: [] };
+                stack.length = 0;
+                break;
+
+            case 'DIRECTORY':
+            case 'FILE':
+            case 'ELLIPSIS': {
+                const nodeType: NodeType =
+                    token.type === 'DIRECTORY' ? 'directory' :
+                    token.type === 'ELLIPSIS' ? 'ellipsis' : 'file';
+                
+                const node: TreeNode = {
+                    type: nodeType,
+                    name: token.name,
+                    children: []
+                };
+
+                if(nodeType === 'file') {
+                    const parts = token.name.split('.')
+                    if(parts.length > 1) {
+                        node.extension = parts[parts.length - 1] ?? '';
+                    }
+                }
+
+                while(stack.length > 0 && stack[stack.length - 1]!.depth >= token.depth) {
+                    stack.pop();
+                }
+
+                if(stack.length === 0) {
+                    currentTree.children.push(node);
+                }
+                else {
+                    stack[stack.length - 1]?.node.children.push(node);
+                }
+
+                if(nodeType === 'directory') {
+                    stack.push({ node, depth: token.depth });
+                }
+
+                break;
+            }
+        }
+    }
+
+    if(currentTree.children.length > 0) {
+        trees.push(currentTree);
+    }
+
+    return {trees, errors};
+}
