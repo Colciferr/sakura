@@ -13,7 +13,8 @@ export interface Token {
     type: TokenType;
     raw: string;        // original line, untouched
     depth: number;       // indent level (0 = root)
-    name: string;    // cleaned name, no indent or trailing comment 
+    name: string;    // cleaned name, no indent or trailing comment
+    line: number;
 }
 
 // Detects the indent unit from the first indented line (tabs or spaces)
@@ -38,24 +39,25 @@ export function tokenize(input: string): Token[] {
   const indentUnit = detectIndentUnit(lines);
   const tokens: Token[] = [];
 
-  for (const raw of lines) {
-    const trimmed = raw.trim();
+  for (let i = 0; i < lines.length; i++) {
+      const raw = lines[i]!;
+      const trimmed = raw.trim();
 
     // BLANK
     if (trimmed === '') {
-      tokens.push({ type: 'BLANK', raw, depth: 0, name: '' });
+      tokens.push({ type: 'BLANK', raw, depth: 0, name: '', line: i + 1  });
       continue;
     }
 
     // COMMENT - whole line is a comment
     if (trimmed.startsWith('#')) {
-      tokens.push({ type: 'COMMENT', raw, depth: 0, name: trimmed });
+      tokens.push({ type: 'COMMENT', raw, depth: 0, name: trimmed, line: i + 1  });
       continue;
     }
 
     // SEPARATOR
     if (trimmed === '---') {
-      tokens.push({ type: 'SEPARATOR', raw, depth: 0, name: '---' });
+      tokens.push({ type: 'SEPARATOR', raw, depth: 0, name: '---', line: i + 1  });
       continue;
     }
 
@@ -73,24 +75,24 @@ export function tokenize(input: string): Token[] {
 
     // TARGET
     if (name.startsWith('target:')) {
-      tokens.push({ type: 'TARGET', raw, depth: 0, name });
+      tokens.push({ type: 'TARGET', raw, depth: 0, name, line: i + 1  });
       continue;
     }
 
     // ELLIPSIS
     if (name === '...') {
-      tokens.push({ type: 'ELLIPSIS', raw, depth, name: '...' });
+      tokens.push({ type: 'ELLIPSIS', raw, depth, name: '...', line: i + 1  });
       continue;
     }
 
     // DIRECTORY
     if (name.endsWith('/')) {
-      tokens.push({ type: 'DIRECTORY', raw, depth, name });
+      tokens.push({ type: 'DIRECTORY', raw, depth, name, line: i + 1  });
       continue;
     }
 
     // FILE (anything else with a name)
-    tokens.push({ type: 'FILE', raw, depth, name });
+    tokens.push({ type: 'FILE', raw, depth, name, line: i + 1  });
   }
 
   return tokens;

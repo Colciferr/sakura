@@ -40,12 +40,30 @@ export function buildTrees(tokens: Token[]): BuildResult {
                 break;
             
             // stamped onto the current tree
-            case 'TARGET':
-                currentTree.target = token.name
-                    .replace(/^target:\s*/, '').trim()
+            case 'TARGET': {
+                const path = token.name
+                    .replace(/^target:\s*/, '')
                     .replace(/^['"]|['"]$/g, '')
                     .trim();
+
+                if(currentTree.target !== undefined) {
+                    errors.push({ message: 'Unexpected target: duplicate target declaration in the same block', line: token.line });
+                    break;
+                }
+
+                if(currentTree.children.length > 0) {
+                    errors.push({ message: 'Unexpected target: target must be declared before the root', line: token.line });
+                    break;
+                }
+
+                if(path === '') {
+                    // treat as no target, per spec
+                    break;
+                }
+
+                currentTree.target = path;
                 break;
+                }
 
             // seals the current tree, pushes it, & resets both tree and stack for the next block
             case 'SEPARATOR':

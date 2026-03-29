@@ -34,3 +34,30 @@ const input3 = `scripts/
 const result3 = buildTrees(tokenize(input3));
 console.log('\nTest 3 - ellipsis:');
 console.log(JSON.stringify(result3, null, 2));
+
+// Test 4: duplicate target
+const input4 = `target: 'C:/temp'
+target: 'C:/other'
+root/`;
+
+const result4 = buildTrees(tokenize(input4));
+console.log('\nTest 4 - duplicate target:');
+console.log(JSON.stringify(result4.errors, null, 2));
+
+// Test 5: target mid-tree
+const input5 = `root/
+    subdir/
+target: 'C:/temp'`;
+
+const result5 = buildTrees(tokenize(input5));
+console.log('\nTest 5 - target mid-tree:');
+console.log(JSON.stringify(result5.errors, null, 2));
+
+// Test 6: empty target
+const input6 = `target: ''
+root/
+    subdir/`;
+
+const result6 = buildTrees(tokenize(input6));
+console.log('\nTest 6 - empty target (should behave as no target):');
+console.log(JSON.stringify(result6.trees[0], null, 2));
