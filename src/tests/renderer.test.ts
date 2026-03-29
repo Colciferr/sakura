@@ -20,3 +20,17 @@ console.log(renderTrees(trees, 'ansi'));
 
 console.log('\nHTML output:');
 console.log(renderTrees(trees, 'html'));
+
+const input2 = `target: 'C:\\'
+home/
+    documents/
+        notes.txt
+---
+target: 'C:\\temp'
+shared/
+    games/
+        runescape.exe
+    pictures/`;
+
+console.log('\nANSI multi-tree output:');
+console.log(renderTrees(buildTrees(tokenize(input2)).trees, 'ansi'));
