@@ -35,13 +35,13 @@ Future features:
 | extension | color |
 | --- | --- |
 | root directory | gold |
-| all other dirs | dark yellow |
+| all other dirs | yellow |
 | .txt | white | 
 | .exe and script files | blue |
 | .json/.xml | green |
-| .config/.yang | yellow | 
+| .config/.yang | cyan | 
 | .md | purple |
-| (default) | white |
+| (default) | gray |
 
 ## Valid examples 
 
