@@ -3,16 +3,18 @@
 To Dos: 
 - [x] Outline project goal and specifications 
 - [x] Stand up repo `Colciferr/sakura`
-- [ ] Build Parser - reads Sakura code fence, outputs a JSON tree structure
-- [ ] Build Renderer - takes the JSON, outputs the `|`, `├──`, `└──` formatted tree
+- [x] Build Parser - reads Sakura code fence, outputs a JSON tree structure
+- [x] Build Renderer - takes the JSON, outputs the `|`, `├──`, `└──` formatted tree
+- [ ] VS Code Extension
+- [ ] Remark plugin
+- [ ] Publishing
+- [ ] V2 features:
+    - [ ] Build the designed tree to a new file directory
+    - [ ] Security group indexing
 
 ## Overview
 
 Structure file systems or other systems needing tree-like structures before its built out in your system. Use output for color-coded and organized tree diagrams for project docs, presentations, etc. 
-
-Future features: 
-- Build the tree to a specified filepath, creating the directory structure to your file system all at once. 
-- Security group indexing 
 
 ## Syntax rules 
 
