@@ -1,39 +1,23 @@
-#!/usr/bin/env mode
+#!/usr/bin/env node
 import * as fs from 'fs';
-import * as readline from 'readline';
 import { sakura } from './index';
+import { Editor } from './editor';
 
 const filePath = process.argv[2];
 
 if (filePath) {
-  // file mode
-  const fileContent = fs.readFileSync(filePath!, 'utf-8');
-  console.log(sakura(fileContent, 'ansi'));
-} 
+  // File mode: read and render a .sakura file directly
+  try {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    console.log(sakura(fileContent, 'ansi'));
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Error: could not read file "${filePath}" — ${message}`);
+    process.exit(1);
+  }
+}
 else {
-  // REPL mode
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  const lines: string[] = [];
-
-  console.log('Sakura REPL — type your tree, then :render to output, :clear to reset, :quit to exit.\n');
-
-  rl.on('line', (input) => {
-    if (input === ':quit') {
-      rl.close();
-    } 
-    else if (input === ':render') {
-      console.log('\n' + sakura(lines.join('\n'), 'ansi') + '\n');
-    } 
-    else if (input === ':clear') {
-      lines.length = 0;
-      console.log('cleared.\n');
-    } 
-    else {
-      lines.push(input);
-    }
-  });
+  // Interactive editor mode
+  const editor = new Editor((input: string) => sakura(input, 'ansi'));
+  editor.start();
 }

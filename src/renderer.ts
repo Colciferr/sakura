@@ -1,4 +1,3 @@
-import { ping } from 'undici-types';
 import { SakuraTree, TreeNode } from './treeBuilder';
 
 export type RenderMode = 'ansi' | 'html';

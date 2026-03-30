@@ -94,6 +94,16 @@ export function buildTrees(tokens: Token[]): BuildResult {
                     }
                 }
 
+                // Validate that indentation doesn't skip levels (e.g. depth 0 -> depth 2)
+                const expectedMaxDepth = stack.length === 0 ? 0 : stack[stack.length - 1]!.depth + 1;
+                if (token.depth > expectedMaxDepth) {
+                    errors.push({
+                        message: `Invalid indentation: jumped from depth ${expectedMaxDepth - 1} to ${token.depth} (skipped a level)`,
+                        line: token.line
+                    });
+                    break;
+                }
+
                 while(stack.length > 0 && stack[stack.length - 1]!.depth >= token.depth) {
                     stack.pop();
                 }
