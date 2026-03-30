@@ -45,7 +45,9 @@ Structure file systems or other systems needing tree-like structures before its 
 
 ### CLI
 ```
-sakura
+npx ts-node src/cli.ts
+npx ts-node src/cli.ts example.sakura
+
 ```
 Opens the Sakura REPL. Type your tree structure, then:
 - `:render` — output the tree
