@@ -25,27 +25,38 @@ Structure file systems or other systems needing tree-like structures before its 
 ### Setup
 1. Clone the repo
 ```
-   git clone https://github.com/Colciferr/sakura.git
-   cd sakura
+git clone https://github.com/Colciferr/sakura.git
+cd sakura
 ```
+
 2. Install dependencies
 ```
-   npm install
+winget install node.js
 ```
+Update path, if needed.    
+```
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+```
+```
+npm install
+```
+
 3. Build
 ```
-   npm run build
+npm run build
 ```
+
 4. Link globally
 ```
-   npm link
+npm link
 ```
 
 ## Usage
 
 ### CLI
 ```
-sakura
+npx ts-node src/cli.ts
+
 ```
 Opens the Sakura REPL. Type your tree structure, then:
 - `:render` — output the tree
@@ -54,7 +65,7 @@ Opens the Sakura REPL. Type your tree structure, then:
 
 ### File mode
 ```
-sakura <path-to-file>
+npx ts-node src/cli.ts example.sakura
 ```
 Renders a `.sakura` file directly to the terminal.
 
