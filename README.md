@@ -25,23 +25,30 @@ Structure file systems or other systems needing tree-like structures before its 
 ### Setup
 1. Clone the repo
 ```
-   git clone https://github.com/Colciferr/sakura.git
-   cd sakura
+git clone https://github.com/Colciferr/sakura.git
+cd sakura
 ```
+
 2. Install dependencies
 ```
 winget install node.js
 ```
+Update path, if needed.    
 ```
-   npm install
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
 ```
+```
+npm install
+```
+
 3. Build
 ```
-   npm run build
+npm run build
 ```
+
 4. Link globally
 ```
-   npm link
+npm link
 ```
 
 ## Usage
