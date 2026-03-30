@@ -30,6 +30,9 @@ Structure file systems or other systems needing tree-like structures before its 
 ```
 2. Install dependencies
 ```
+winget install node.js
+```
+```
    npm install
 ```
 3. Build
@@ -46,7 +49,6 @@ Structure file systems or other systems needing tree-like structures before its 
 ### CLI
 ```
 npx ts-node src/cli.ts
-npx ts-node src/cli.ts example.sakura
 
 ```
 Opens the Sakura REPL. Type your tree structure, then:
@@ -56,7 +58,7 @@ Opens the Sakura REPL. Type your tree structure, then:
 
 ### File mode
 ```
-sakura <path-to-file>
+npx ts-node src/cli.ts example.sakura
 ```
 Renders a `.sakura` file directly to the terminal.
 
