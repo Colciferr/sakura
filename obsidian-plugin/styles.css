@@ -1,0 +1,28 @@
+.sakura-container {
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", "Consolas", monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre;
+  color: #cccccc;
+}
+
+.sakura-container pre {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  white-space: pre;
+}
+
+.sakura-error {
+  color: #E57373;
+  font-family: inherit;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
