@@ -7,6 +7,9 @@ import { renderTrees } from "../src/renderer";
 export default class SakuraPlugin extends Plugin {
   async onload() {
     this.registerMarkdownCodeBlockProcessor("sakura", (source, el) => {
+      // Style the Obsidian-provided wrapper to match our dark background
+      el.addClass("sakura-wrapper");
+
       const container = el.createEl("div", { cls: "sakura-container" });
 
       // Run the pipeline directly so we can handle errors and output separately

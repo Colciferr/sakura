@@ -1,10 +1,16 @@
+/* Obsidian wraps code block processor output in its own container —
+   style it to remove the default code block background/border */
+.sakura-wrapper {
+  background-color: var(--code-background, #1e1e1e) !important;
+  border-radius: var(--radius-s, 6px);
+  padding: 0 !important;
+}
+
 .sakura-container {
-  background-color: #1e1e1e;
-  border-radius: 6px;
-  padding: 16px;
+  padding: var(--size-4-4, 16px) var(--size-4-5, 20px);
   overflow-x: auto;
-  font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", "Consolas", monospace;
-  font-size: 14px;
+  font-family: var(--font-monospace);
+  font-size: var(--code-size, 14px);
   line-height: 1.4;
   white-space: pre;
   color: #cccccc;
