@@ -1,13 +1,21 @@
 // Interactive terminal editor for Sakura REPL mode.
 // Uses raw stdin mode + ANSI escape sequences — no external dependencies.
-// Keybindings: Ctrl+R = render, Ctrl+L = clear, Ctrl+Q = quit
+// Keybindings: Ctrl+R = render, Ctrl+L = clear, Ctrl+D = quit
+// Colon commands: :render, :clear, :quit
 
 const TAB_SIZE = 4;
+
+// Vim-style colon commands — reliable fallback when Ctrl shortcuts are intercepted
+const COLON_COMMANDS: Record<string, 'render' | 'clear' | 'quit'> = {
+  ':render': 'render',
+  ':clear':  'clear',
+  ':quit':   'quit',
+};
 
 // Header lines shown at top of editor
 const HEADER = [
   '\x1b[1;35mSakura Editor\x1b[0m',
-  '\x1b[90mCtrl+R: render  |  Ctrl+L: clear  |  Ctrl+Q: quit  |  Tab: indent\x1b[0m',
+  '\x1b[90mCtrl+R :render  |  Ctrl+L :clear  |  Ctrl+D :quit  |  Tab: indent\x1b[0m',
   '', // blank separator
 ];
 const HEADER_HEIGHT = HEADER.length;
@@ -92,7 +100,7 @@ export class Editor {
     }
 
     // --- Ctrl keys ---
-    if (byte0 === 0x11) { this.doQuit(); return; }   // Ctrl+Q
+    if (byte0 === 0x04) { this.doQuit(); return; }   // Ctrl+D
     if (byte0 === 0x12) { this.doRender(); return; }  // Ctrl+R
     if (byte0 === 0x0c) { this.doClear(); return; }   // Ctrl+L
 
@@ -100,7 +108,25 @@ export class Editor {
     if (byte0 === 0x03) { this.doQuit(); return; }
 
     // --- Enter ---
-    if (byte0 === 0x0d) { this.newLine(); return; }
+    if (byte0 === 0x0d) {
+      // Check for colon commands before inserting a newline
+      const cmd = COLON_COMMANDS[this.currentLine().trim()];
+      if (cmd) {
+        // Remove the command line from the buffer so it doesn't persist
+        this.lines.splice(this.cursorRow, 1);
+        if (this.lines.length === 0) this.lines = [''];
+        this.cursorRow = Math.min(this.cursorRow, this.lines.length - 1);
+        this.cursorCol = Math.min(this.cursorCol, this.currentLine().length);
+        this.adjustScroll();
+
+        if (cmd === 'render') { this.doRender(); }
+        else if (cmd === 'clear') { this.doClear(); }
+        else if (cmd === 'quit') { this.doQuit(); }
+        return;
+      }
+      this.newLine();
+      return;
+    }
 
     // --- Backspace (0x7f on most terminals, 0x08 on some Windows terminals) ---
     if (byte0 === 0x7f || byte0 === 0x08) { this.backspace(); return; }
