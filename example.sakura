@@ -1,19 +1,21 @@
 target: C:\temp
+# This is the main project structure
 root/
     sub folder/
-        text.txt
-        python.py
-        config.json
+        text.txt  # a text file
+        python.py  # main script
+        config.json  -- internal config, don't show
         config.xml
     sub folder/
         settings.yang
         settings.config
-        ...
+        ...  # more files here
     ...
 ---
 target: root\sub folder
+-- this comment should be hidden
 root2/
-    markdown.md
+    markdown.md  # documentation
     doc.pdf
     unknown
     tree.sakura

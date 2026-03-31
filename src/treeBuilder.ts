@@ -1,11 +1,12 @@
 import { Token, TokenType } from "./tokenizer";
 
-export type NodeType = 'directory' | 'file' | 'ellipsis';
+export type NodeType = 'directory' | 'file' | 'ellipsis' | 'comment';
 
 export interface TreeNode {
     type: NodeType;
     name: string;
-    extension?: string;
+    extension?: string | undefined;
+    comment?: string | undefined;
     children: TreeNode[];
 }
 
@@ -34,10 +35,31 @@ export function buildTrees(tokens: Token[]): BuildResult {
     for (const token of tokens) {
         switch (token.type) {
 
-            // skipped cases
-            case 'COMMENT':
+            // Hidden comments and blank lines are skipped
             case 'BLANK':
                 break;
+
+            // Visible comments are placed in the tree at their depth level
+            case 'COMMENT': {
+                const commentNode: TreeNode = {
+                    type: 'comment',
+                    name: '',
+                    comment: token.comment,
+                    children: []
+                };
+
+                while(stack.length > 0 && stack[stack.length - 1]!.depth >= token.depth) {
+                    stack.pop();
+                }
+
+                if(stack.length === 0) {
+                    currentTree.children.push(commentNode);
+                }
+                else {
+                    stack[stack.length - 1]?.node.children.push(commentNode);
+                }
+                break;
+            }
             
             // stamped onto the current tree
             case 'TARGET': {
@@ -84,6 +106,7 @@ export function buildTrees(tokens: Token[]): BuildResult {
                 const node: TreeNode = {
                     type: nodeType,
                     name: token.name,
+                    comment: token.comment,
                     children: []
                 };
 
