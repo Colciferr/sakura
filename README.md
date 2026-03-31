@@ -5,6 +5,7 @@ To Dos:
 - [x] Stand up repo `Colciferr/sakura`
 - [x] Build Parser - reads Sakura code fence, outputs a JSON tree structure
 - [x] Build Renderer - takes the JSON, outputs the `|`, `├──`, `└──` formatted tree
+- [x] Obisidian compatibility
 - [ ] VS Code Extension
 - [ ] Remark plugin
 - [ ] Publishing
