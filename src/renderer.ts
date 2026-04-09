@@ -37,6 +37,15 @@ const HTML_COLORS = {
 
 type ColorName = Exclude<keyof typeof ANSI, 'reset'>;
 
+// Escape HTML special characters to prevent XSS when rendering in HTML mode
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function getColor(node: TreeNode, isRoot: boolean): ColorName {
   if (node.type === 'comment') return 'gray';
   if (isRoot && node.type === 'directory') return 'gold';
@@ -61,7 +70,7 @@ function colorize(text: string, color: ColorName, mode: RenderMode): string {
     return `${ANSI[color]}${text}${ANSI.reset}`;
   } 
   else {
-    return `<span style="color: ${HTML_COLORS[color]}">${text}</span>`;
+    return `<span style="color: ${HTML_COLORS[color]}">${escapeHtml(text)}</span>`;
   }
 }
 
@@ -73,7 +82,7 @@ function renderTree(tree: SakuraTree, mode: RenderMode): string {
   const lines: string[] = [];
 
   if (tree.target) {
-    lines.push(tree.target);
+    lines.push(mode === 'html' ? escapeHtml(tree.target) : tree.target);
   }
 
   for (const node of tree.children) {

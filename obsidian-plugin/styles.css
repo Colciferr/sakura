@@ -1,7 +1,7 @@
 /* Obsidian wraps code block processor output in its own container —
    style it to remove the default code block background/border */
 .sakura-wrapper {
-  background-color: var(--code-background, #1e1e1e) !important;
+  background-color: #1e1e1e !important;
   border-radius: var(--radius-s, 6px);
   padding: 0 !important;
 }
