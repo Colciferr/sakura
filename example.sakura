@@ -10,7 +10,6 @@ root/
         settings.yang
         settings.config
         ...  # more files here
-    ...
 ---
 target: root\sub folder
 -- this comment should be hidden
