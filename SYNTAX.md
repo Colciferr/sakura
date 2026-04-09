@@ -16,18 +16,22 @@
 
 ## File extensions color map
 
-| extension | color |
-| --- | --- |
-| root directory | gold |
-| all other dirs | yellow |
-| .txt | white | 
-| .exe and script files | blue |
-| .json/.xml | green |
-| .config/.yang | cyan | 
-| .md | purple |
-| .pdf | dark red |
-| .sakura | pink |
-| (default) | gray |
+| category | extensions | color |
+| --- | --- | --- |
+| root directory | | gold |
+| all other dirs | | yellow |
+| plain text | .txt, .log, .out | white |
+| executables & scripts | .exe, .ps1, .sh, .bat, .cmd, .py, .rb, .pl, .lua, .php, .jar, .msi | blue |
+| data & config formats | .json, .xml, .yaml, .yml, .toml, .csv, .env, .ini | green |
+| config files | .config, .yang, .conf, .cfg, .properties | cyan |
+| web | .html, .htm, .css, .scss, .less, .vue, .svelte | light blue |
+| source code | .ts, .js, .jsx, .tsx, .c, .cpp, .h, .cs, .go, .rs, .java, .kt, .swift, .zig, .sql | blue-gray |
+| documentation | .md, .rst, .adoc, .tex, .mdx | purple |
+| documents, archives & media | .pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .odt, .ods, .odp, .zip, .tar, .gz, .7z, .iso, .dmg, .img, .png, .jpg, .jpeg, .gif, .bmp, .ico, .webp, .svg, .mp3, .mp4, .wav | red |
+| sakura | .sakura | pink |
+| ellipsis | ... | white |
+| comments | # | gray |
+| (default) | | gray |
 
 ## Valid examples 
 
@@ -209,7 +213,7 @@ link/documents/music/john williams/
     └── theme.mp3
 ```
 
-If a subsequent tree is going to represent a folder in a previous tree, it must refer to a folder that is defined in the previous tree. A new tree may refer to a folder elsewhere in the file system that is not defined in a previous tree, as long as it does not attempt to refer to definitions not present in preceding trees. 
+`.\` references are not validated against previous trees. The target path is used as-is for display purposes.
 
 ### Referring to non-existent objects 
 
