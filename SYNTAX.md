@@ -1,20 +1,24 @@
-# Sakura Syntax Reference 
+# Sakura Syntax Reference
+
+Sakura turns an indented list inside a ` ```sakura ` code block into a colored
+directory tree. The syntax is deliberately forgiving — when in doubt, Sakura
+renders something rather than throwing an error.
+
+## Keywords
 
 | keyword | mandatory | description | example | notes |
 | --- | --- | --- | --- | --- |
 | ` ```sakura ` / ` ``` ` | yes | open fence / close fence | | |
-| `target: <filepath>` | no | defines where the tree will go in the file system | `target: 'C:/temp'` | path must be in quotes. spaces OK. accepts both `/` and `\`. when present, target path acts as the implicit root and multiple top-level entries are allowed. V1: Display only. V2: can build tree at specified target path, should it exist. |
-| `<dirname>/` | yes | specify root folder name. trailing `/` indicates a directory | `home/` | must define a root folder at a minimum. required when no `target` is specified. |
-| `<tab>` | no |one tab character specifies a lower level of the directory. subsequent tabs indicate subsequent levels | `<tab> documents/` | indentation may use spaces or tab characters. the indent unit is determined by the first indented line and must be consistent throughout the tree. mixing tabs and spaces is not supported and will be treated as an error. |
-| `<tab> <dirname>/` | no | a full tab + name + `/` indicates a child folder | `<tab> pictures/` | |
-| `<tab> <filename>` | no |a name without `/` indicates a file | `<tab> notes` | all files belong to a folder, so all files must begin with at least one tab. | 
-| `<tab> <filename>.<type>` | no |specify a file with a certain type | `<tab> settings.json` | all files and folders are color-coded. file type will determine color. |
-| `#` | no | single-line comment | `# this is a comment` | notes |
-| `.\` | no | used with the `target:` parameter to refer to the root folder of the previous tree | `target: .\documents` | |
-| `---` | no | separate tree structures | | place between trees. another, separate tree can be built beneath it if you need multiple trees with different root folders. especially useful when the `target:` parameter is different for each tree. |  
-| `...` | no | used to indicate an indeterminant amount of folders not listed | | place before or after list of folders/files |
+| `<name>` | yes | one entry per line. At least one entry is required. | `documents` | A name with items nested under it is a **folder**. A bare word with no extension is also treated as a **folder**. A name with a `.extension` is a **file**. |
+| `<name>/` | no | a trailing `/` explicitly marks a folder | `pictures/` | Optional — folders are detected automatically. A `/` you type is kept in the output; omit it and the folder still renders, just without the slash. Type it to mark an empty folder whose name *looks* like a file. |
+| indentation | no | nest an entry under the line above by indenting it | `    notes.txt` | Tabs or spaces, either one. Widths don't have to be consistent and tabs/spaces may be mixed — Sakura reads depth from *relative* nesting, not exact width. |
+| `<name>.<ext>` | no | a file extension sets the entry's color | `settings.json` | See the color map below. |
+| `#` | no | comment — rendered in gray in the output | `# this is a comment` | Works as a full line or at the end of a line. Text after a `#` mid-name is treated as a comment. |
+| ` --` | no | hidden comment — removed entirely, never rendered | `notes.txt -- TODO` | Needs a space before `--`. A full line starting with `--` is dropped. |
+| `---` | no | separator between independent trees | | Place between two trees to render them as separate blocks. |
+| `...` | no | ellipsis — stands in for an unspecified number of entries | | Allowed at any sub-level, as many times as needed. Not allowed at the root. |
 
-## File extensions color map
+## File extension color map
 
 | category | extensions | color |
 | --- | --- | --- |
@@ -33,257 +37,146 @@
 | comments | # | gray |
 | (default) | | gray |
 
-## Valid examples 
+## Valid examples
 
-### Creating a basic tree 
+### A basic tree
 
-Create a root folder called "home", and two subfolders.
+A root folder called "home" with two subfolders. No trailing slashes needed —
+`documents` and `scripts` are folders because things are nested under them.
 
-**Valid input**
+**Input**
 ```
 ```sakura
-home/                   # root folder
-    documents/          # tab + / indicating subdirectory
-    scripts/
-```                     # close fence
+home
+    documents
+        notes.txt
+    scripts
 ```
-**Expected output**
 ```
-home/
-├── documents/
-└── scripts/
+**Output**
 ```
-
-Every new tree must begin with and include a root folder at a minimum.
-
-### Creating a tree with a folder, subfolders, and files
-
-Create root, subfolders, and files within those subfolders.
-
-**Valid input**
-```
-```sakura
-home/
-    documents/
-        notes.txt       # one tab for each level
-    scripts/
-        program.exe
-        script.py
-```                     # close fence
+home
+├── documents
+│   └── notes.txt
+└── scripts
 ```
 
-**Expected output**
-```
-home/
-├── documents/
-|   └── notes.txt
-└── scripts/
-    ├── program.exe
-    └── script.py
-```
+### Keeping the slashes
 
-Files and folders may contain any valid Windows filename character. 
+Type the `/` yourself and Sakura keeps it — useful when you want the explicit
+file-tree look. Omit it and the folder still renders, just without a slash.
 
-### Specify a target directory for the tree
-
-Specifies where the tree will go once its built. 
-
-**Valid input**
+**Input**
 ```
 ```sakura
-target: 'C:\temp'
-root/                   # root filepath would look like 'C:\temp\root'
-    subdir/
-        file
-```                     # close fence
-```
-
-**Expected output**
-```
-C:/temp
-root/                   
-└── subdir/
-    └── file
-```
-
-A new tree may be defined anywhere within the existing file system, if so desired. 
-
-### Creating multiple trees 
-
-Creates two root folders called "home" and "shared" with subfolders and files. 
-
-**Valid input**
-```
-```sakura
-target: 'C:\'
 home/
     documents/
         notes.txt
     scripts/
-        program.exe
-        script.py
----                     # indicates the end of the previous tree and the beginning of a new one
-target: 'C:\temp'
-shared/
-    games/
-        oldschoolrunescape.exe
-        soliatire.exe
-    pictures/
-```                     # close
 ```
-**Expected output** 
 ```
-C:\
+**Output**
+```
 home/
 ├── documents/
-|   └── notes.txt
+│   └── notes.txt
 └── scripts/
+```
+
+### Folders, subfolders, and files
+
+**Input**
+```
+```sakura
+home
+    documents
+        notes.txt
+    scripts
+        program.exe
+        script.py
+```
+```
+**Output**
+```
+home
+├── documents
+│   └── notes.txt
+└── scripts
     ├── program.exe
     └── script.py
-
-C:\temp
-shared/
-├── games/
-|   ├── oldschoolrunescape.exe
-|   └── solitaire.exe
-└── pictures/
 ```
-Every new tree must begin with a root directory. 
 
-Setting targets is also useful for deep nests, to maintain readability. 
+### Multiple trees
 
-**Valid input**
+Top-level folders can stand side by side. Use `---` to render two unrelated
+trees as separate blocks.
+
+**Input**
 ```
 ```sakura
-target: 'C:\users'
-accounts/
-    bowser/
-    link/
-        documents/
-    lucina/
-    mario/
-    marth/
+home
+    documents
+    scripts
 ---
-target: '.\link'    # '.\' can be used to reference the root in the previous tree
-documents/
-    music/
-        john williams/
-        MFDOOM/
-    school/
-        history/
-        math/
-        science/
-    work/
-        job applications/
----
-target: '.\music\john williams'     # the last directory in the target: filepath is treated as this tree's "root" folder
-star wars/
-    theme.mp3
-indiana jones/
-    theme.mp3
-```                 # close fence
+shared
+    games
+    pictures
+```
+```
+**Output**
+```
+home
+├── documents
+└── scripts
+
+shared
+├── games
+└── pictures
 ```
 
-**Expected output** 
-```
-C:\users
-accounts/
-├── bowser/
-├── link/
-|   └── documents/
-├── lucina/
-├── mario/
-└── marth/
+Note `pictures` has no slash and no children, yet still counts as a folder —
+a bare word with no extension is treated as one by default (you'd see it in
+the folder color).
 
-link/documents/
-├── music/
-|   ├── john williams/
-|   └── MFDOOM/
-├── school/
-|   ├── history/
-|   ├── math/
-|   └── science/
-└── work/
-    └── job applications/
+### Ellipsis
 
-link/documents/music/john williams/
-├── star wars/
-|  └── theme.mp3
-└── indiana jones/
-    └── theme.mp3
-```
+`...` implies more entries exist without listing them.
 
-`.\` references are not validated against previous trees. The target path is used as-is for display purposes.
-
-### Referring to non-existent objects 
-
-`...` can be used to imply that more files/folders may be added in the future, or the true number of files is too repetitive to meaningfully recreate here. 
-
-**Valid input**
+**Input**
 ```
 ```sakura
-scripts/
-    powershell/
+scripts
+    powershell
         helloWorld.ps1
-        new-script.ps1
-        ...                 # represents an unknown number of files similar to those preceding it, 
-                            # or unrelated to the needs of the diagram entirely
-```                         # close fence
+        ...
 ```
-
-**Expected output**
 ```
-scripts/
-└── powershell/
+**Output**
+```
+scripts
+└── powershell
     ├── helloWorld.ps1
-    ├── new-script.ps1
     └── ...
 ```
 
-## Edge cases
+## How forgiving is it?
 
-### Structural errors
-- No root defined. Open fence with first line indented. 
-    - Syntax error. No root specified. 
-- Multiple roots without `---` separator. 
-    - Syntax error when no `target` is specified. 
-- Indentation skips a level. E.g., goes from 1 unit to 3 units with nothing at 2.
-    - Syntax error. Improper indentation resulting in orphaned objects. 
-- Mixing tabs and spaces in the same tree
-    - Syntax error. Sakura will use first indentation it sees and expect that in the rest of the tree.
-- Empty fence.
-    - No output. 
+These all used to be errors and now just render:
 
-### `target:` errors
-- `target` defined but path is empty. 
-    - Sakura treats it as though no target parameter exists. 
-- `target` defined mid-tree instead of before the root.
-    - "Unexpected target" error is thrown.  
-- `.\` used in first tree where there's no previous root to reference.
-    - Treated just like an empty target parameter. 
-- `.\` resolves to a folder not defined in the previous tree.
-    - The `target` parameter can reference any filepath regardless of if its real or not. It just can't reference files/folders in a previous tree that are not defined in that tree already. This is to avoid accidental inconsistencies in the finished tree and aid readability. 
-- Two `target` declarations in the same tree block. 
-    - Second `target` declaration treated the same as a `target` declared mid-tree. Throws an error. 
+- **Missing trailing slashes** — folders are inferred from nesting, and any bare extensionless word is treated as a folder.
+- **Inconsistent indentation** — 2 spaces here, 6 there; depth is relative.
+- **Mixed tabs and spaces** — treated interchangeably.
+- **Multiple root folders** — rendered as siblings, no extra syntax needed.
+- **Unusual filename characters** (`< > : " | ? *`) — rendered as-is.
 
-### Naming 
-- Any files names supported by Windows are supported by Sakura. 
-    V1: Filenames disallowed by Windows will throw syntax errors. 
-    V2: OS agnostic. Any valid filename characters are allowed. 
-- Filename with no extension and no `/`
-    - All filenames without `/` are treated as a file, not a folder. 
-    - Filenames without an extension are treated as a "FILE" filetype. 
-- A line that is just `#` 
-    - All `#` are treated as comments by Sakura. So a filename with only a `#` will be treated as blank and throw a syntax error. 
-    - If a name has a `#` sign in the middle of it, all text after the sign will be ignored as a comment 
+## Remaining rules
 
-### `...` errors
-- `...` at the root level
-    - Syntax error. Ellipses is only allowed at the subdirectory levels. 
-- `...` can be placed anywhere within a subdirectory, as many times as necessary. These are visual representations of unknown or abstracted objects.
-
-### Color map edge cases
-- File with multiple dots, such as `archive.tar.gz`
-    - Last extension wins.
-- Files with no extension default to gray. 
-- Extensions not in color map default to gray.
+- **Empty fence** — renders nothing.
+- **A bare leaf with no extension** is treated as a folder. The exceptions are
+  well-known extensionless files — `README`, `LICENSE`, `Dockerfile`,
+  `Makefile`, `CHANGELOG`, `Gemfile` and similar — which stay files. Anything
+  with a `.extension` is a file.
+- **`...` at the root level** is the one hard error — an ellipsis means "more
+  siblings here", which is meaningless with no parent folder.
+- **Multiple dots in a name** (`archive.tar.gz`) — the last extension wins.
+- **No extension, or an unknown extension** — defaults to gray.
