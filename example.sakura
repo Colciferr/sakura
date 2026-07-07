@@ -10,7 +10,7 @@ my-project
     tests
         ...                  # an ellipsis stands in for more files
     package.json
-    README                   # known extensionless files still render as files
+    README                   # well-known ALL-CAPS names render as files
     LICENSE
 ---
 # A second, independent tree

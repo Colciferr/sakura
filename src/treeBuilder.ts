@@ -18,19 +18,10 @@ export interface SakuraTree {
     children: TreeNode[];
 }
 
-export interface BuildError {
-    message: string;
-    line?: number;
-}
-
-export interface BuildResult {
-    trees: SakuraTree[];
-    errors: BuildError[];
-}
-
-export function buildTrees(tokens: Token[]): BuildResult {
+// Every input builds — Sakura has no syntax errors, so this returns the
+// trees directly.
+export function buildTrees(tokens: Token[]): SakuraTree[] {
     const trees: SakuraTree[] = [];
-    const errors: BuildError[] = [];
 
     let currentTree: SakuraTree = { children: [] };
     const stack: { node: TreeNode; depth: number }[] = [];
@@ -124,29 +115,41 @@ export function buildTrees(tokens: Token[]): BuildResult {
         }
     }
 
-    return {trees, errors};
+    return trees;
 }
 
-// Well-known extensionless FILES, matched case-insensitively. A bare word with
-// no extension is normally treated as a folder (see finalizeNode); these are
-// the exceptions — the small, stable set of files that conventionally carry
-// no extension. Extend this list if a common one is missing.
-const KNOWN_EXTENSIONLESS_FILES = new Set([
+// Well-known extensionless file NAMES — a file only when typed in ALL CAPS
+// (README, TODO, VERSION, ...). Caps signal the author's intent; the list
+// provides the vocabulary. Lowercase 'todo' or 'history' stay folders, like
+// any other bare word.
+const KNOWN_FILE_WORDS = new Set([
     'readme', 'license', 'licence', 'copying', 'copyright', 'authors',
     'contributors', 'contributing', 'changelog', 'changes', 'history',
     'notice', 'install', 'news', 'todo', 'version',
+]);
+
+// Classic build-file names — files in any case. Nobody writes these in caps,
+// and they aren't generic words, so no folder name is stolen.
+const BUILD_FILES = new Set([
     'dockerfile', 'containerfile', 'makefile', 'gnumakefile', 'rakefile',
     'gemfile', 'guardfile', 'procfile', 'vagrantfile', 'jenkinsfile',
     'brewfile', 'caddyfile', 'justfile', 'berksfile', 'capfile', 'podfile',
 ]);
 
+// ALL-CAPS = uppercase-only and contains at least one letter (so digits or
+// punctuation alone don't qualify).
+function isAllCaps(name: string): boolean {
+    return name === name.toUpperCase() && name !== name.toLowerCase();
+}
+
 // Resolves a node's final type now that the whole tree is built. A token
 // tentatively tagged 'file' (no trailing slash) is reclassified here:
-//   - has children            -> directory (things are nested under it)
-//   - has a .extension         -> file     (extension recorded for coloring)
-//   - bare word, known file    -> file     (README, LICENSE, Dockerfile, ...)
-//   - bare word, anything else -> directory (a folder-structure tool's best
-//                                            guess for an unadorned word)
+//   - has children              -> directory (things are nested under it)
+//   - has a .extension          -> file     (extension recorded for coloring)
+//   - classic build-file name   -> file     (Makefile, Dockerfile, ...)
+//   - ALL-CAPS well-known name  -> file     (README, LICENSE, TODO, ...)
+//   - bare word, anything else  -> directory (a folder-structure tool's best
+//                                             guess for an unadorned word)
 // A trailing slash always wins — those arrive already typed 'directory'.
 function finalizeNode(node: TreeNode): void {
     if(node.type === 'file') {
@@ -158,8 +161,13 @@ function finalizeNode(node: TreeNode): void {
             if(parts.length > 1) {
                 node.extension = parts[parts.length - 1] ?? '';
             }
-            else if(!KNOWN_EXTENSIONLESS_FILES.has(node.name.toLowerCase())) {
-                node.type = 'directory';
+            else {
+                const lower = node.name.toLowerCase();
+                const isKnownFile = BUILD_FILES.has(lower)
+                    || (isAllCaps(node.name) && KNOWN_FILE_WORDS.has(lower));
+                if(!isKnownFile) {
+                    node.type = 'directory';
+                }
             }
         }
     }

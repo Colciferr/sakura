@@ -14,6 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Obsidian's catalog requires the release tag to exactly equal the
+      # manifest version (no "v" prefix) — fail fast on a mismatched tag.
+      - name: Verify tag matches manifest version
+        run: |
+          version=$(jq -r .version manifest.json)
+          if [ "${{ github.ref_name }}" != "$version" ]; then
+            echo "Tag '${{ github.ref_name }}' does not match manifest.json version '$version'"
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

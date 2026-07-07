@@ -5,7 +5,7 @@ import { SakuraTree, TreeNode } from './treeBuilder';
 // has to know what theme or palette is in use.
 export type ColorName =
   | 'gold' | 'yellow' | 'white' | 'blue' | 'lightblue' | 'bluegray'
-  | 'green' | 'purple' | 'cyan' | 'red' | 'pink' | 'gray';
+  | 'green' | 'purple' | 'red' | 'pink' | 'gray';
 
 // One styled piece of a rendered line. A null color means "default text
 // color" — used for the tree connectors (├── └── │).
@@ -28,15 +28,15 @@ function getColor(node: TreeNode, isRoot: boolean): ColorName {
   // Lowercase so .PNG, .Json etc. color the same as their lowercase form.
   const ext = (node.extension ?? '').toLowerCase();
   if (['exe', 'ps1', 'sh', 'bat', 'cmd', 'py', 'rb', 'pl', 'lua', 'php', 'jar', 'msi'].includes(ext)) return 'blue';
-  if (['json', 'xml', 'yaml', 'yml', 'toml', 'csv', 'env', 'ini'].includes(ext)) return 'green';
-  if (['config', 'yang', 'conf', 'cfg', 'properties'].includes(ext)) return 'cyan';
+  if (['json', 'xml', 'yaml', 'yml', 'toml', 'csv', 'env', 'ini', 'config', 'yang', 'conf', 'cfg', 'properties'].includes(ext)) return 'green';
   if (['md', 'rst', 'adoc', 'tex', 'mdx'].includes(ext)) return 'purple';
   if (['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'odt', 'ods', 'odp', 'zip', 'tar', 'gz', '7z', 'iso', 'dmg', 'img', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp', 'svg', 'mp3', 'mp4', 'wav'].includes(ext)) return 'red';
   if (['html', 'htm', 'css', 'scss', 'less', 'vue', 'svelte'].includes(ext)) return 'lightblue';
   if (['ts', 'js', 'jsx', 'tsx', 'c', 'cpp', 'h', 'cs', 'go', 'rs', 'java', 'kt', 'swift', 'zig', 'sql'].includes(ext)) return 'bluegray';
   if (ext === 'sakura') return 'pink';
-  if (['txt', 'log', 'out'].includes(ext)) return 'white';
-  return 'gray';
+  // Plain text and anything unrecognized render white — gray is reserved for
+  // comments, so real entries never blend in with annotations.
+  return 'white';
 }
 
 // A trailing slash is echoed only when the author actually typed one. An

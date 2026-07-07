@@ -33,16 +33,19 @@ function indentWidth(line: string): number {
 
 // Strips trailing inline comments from a name.
 // # comments are visible (preserved as comment text), -- comments are hidden (discarded).
+// Both markers require a leading space, so names like my--file.txt or file#1.txt
+// pass through untouched.
 function stripComment(text: string): { name: string; comment?: string | undefined } {
-  // Hidden comment: ` --` (require space before -- to avoid matching filenames like my--file.txt)
+  // Hidden comment: drop the tail, then re-parse what's left — a visible
+  // # comment before the hidden marker must still be picked up.
   const hiddenIdx = text.indexOf(' --');
   if (hiddenIdx !== -1) {
-    return { name: text.slice(0, hiddenIdx).trim() };
+    return stripComment(text.slice(0, hiddenIdx));
   }
-  // Visible comment: # (strip from name, preserve text)
-  const commentIdx = text.indexOf('#');
+  // Visible comment: strip from name, preserve text
+  const commentIdx = text.indexOf(' #');
   if (commentIdx !== -1) {
-    const comment = text.slice(commentIdx + 1).trim();
+    const comment = text.slice(commentIdx + 2).trim();
     return {
       name: text.slice(0, commentIdx).trim(),
       comment: comment || undefined,
@@ -89,33 +92,42 @@ export function tokenize(input: string): Token[] {
       continue;
     }
 
-    // HIDDEN COMMENT - full line starting with -- (not rendered)
-    if (trimmed.startsWith('--') && trimmed !== '---') {
-      tokens.push({ type: 'BLANK', raw, depth: 0, name: '', line: i + 1 });
+    // SEPARATOR - ends the current tree; reset indentation for the next one.
+    // Checked before the hidden-comment rule so "--- # note" or "----" still
+    // separate trees instead of vanishing: three or more dashes, alone or
+    // followed by whitespace (any trailing text is ignored like a comment).
+    if (/^-{3,}(\s|$)/.test(trimmed)) {
+      tokens.push({ type: 'SEPARATOR', raw, depth: 0, name: '---', line: i + 1  });
+      indentStack = [];
       continue;
     }
 
-    // SEPARATOR - ends the current tree; reset indentation for the next one
-    if (trimmed === '---') {
-      tokens.push({ type: 'SEPARATOR', raw, depth: 0, name: '---', line: i + 1  });
-      indentStack = [];
+    // HIDDEN COMMENT - full line starting with -- (not rendered)
+    if (trimmed.startsWith('--')) {
+      tokens.push({ type: 'BLANK', raw, depth: 0, name: '', line: i + 1 });
       continue;
     }
 
     // Every remaining line type carries a depth derived from its indentation
     const depth = resolveDepth(indentWidth(raw));
 
-    // VISIBLE COMMENT - full line starting with # (rendered in output)
+    // VISIBLE COMMENT - full line starting with # (rendered in output).
+    // A trailing ` --` hidden part is dropped here too — "never rendered"
+    // holds on comment lines just like everywhere else.
     if (trimmed.startsWith('#')) {
-      const commentText = trimmed.slice(1).trim();
+      let commentText = trimmed.slice(1);
+      const hiddenIdx = commentText.indexOf(' --');
+      if (hiddenIdx !== -1) commentText = commentText.slice(0, hiddenIdx);
+      commentText = commentText.trim();
       tokens.push({ type: 'COMMENT', raw, depth, name: '', comment: commentText || undefined, line: i + 1 });
       continue;
     }
 
     const { name, comment } = stripComment(trimmed);
 
-    // ELLIPSIS
-    if (name === '...') {
+    // ELLIPSIS - the keyword is '...', but 2+ dots and the unicode … (what
+    // iOS autocorrects "..." into) are accepted and normalized to it.
+    if (/^(\.{2,}|…)$/.test(name)) {
       tokens.push({ type: 'ELLIPSIS', raw, depth, name: '...', comment, line: i + 1  });
       continue;
     }

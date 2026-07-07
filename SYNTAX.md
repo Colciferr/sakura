@@ -13,10 +13,10 @@ renders something rather than throwing an error.
 | `<name>/` | no | a trailing `/` explicitly marks a folder | `pictures/` | Optional — folders are detected automatically. A `/` you type is kept in the output; omit it and the folder still renders, just without the slash. Type it to mark an empty folder whose name *looks* like a file. |
 | indentation | no | nest an entry under the line above by indenting it | `    notes.txt` | Tabs or spaces, either one. Widths don't have to be consistent and tabs/spaces may be mixed — Sakura reads depth from *relative* nesting, not exact width. |
 | `<name>.<ext>` | no | a file extension sets the entry's color | `settings.json` | See the color map below. |
-| `#` | no | comment — rendered in gray in the output | `# this is a comment` | Works as a full line or at the end of a line. Text after a `#` mid-name is treated as a comment. |
+| `#` | no | comment — rendered in gray in the output | `# this is a comment` | Works as a full line or at the end of a line. An inline `#` needs a space before it, so names like `file#1.txt` render as-is. |
 | ` --` | no | hidden comment — removed entirely, never rendered | `notes.txt -- TODO` | Needs a space before `--`. A full line starting with `--` is dropped. |
-| `---` | no | separator between independent trees | | Place between two trees to render them as separate blocks. |
-| `...` | no | ellipsis — stands in for an unspecified number of entries | | Allowed at any sub-level, as many times as needed. Not allowed at the root. |
+| `---` | no | separator between independent trees | | Place between two trees to render them as separate blocks. Three or more dashes work, and trailing text after a space (`--- # part two`) is ignored. |
+| `...` | no | ellipsis — stands in for an unspecified number of entries | | Allowed anywhere, as many times as needed. Two or more dots (`..`, `....`) and the unicode `…` (what phones autocorrect `...` into) all count. |
 
 ## File extension color map
 
@@ -24,10 +24,8 @@ renders something rather than throwing an error.
 | --- | --- | --- |
 | root directory | | gold |
 | all other dirs | | yellow |
-| plain text | .txt, .log, .out | white |
 | executables & scripts | .exe, .ps1, .sh, .bat, .cmd, .py, .rb, .pl, .lua, .php, .jar, .msi | blue |
-| data & config formats | .json, .xml, .yaml, .yml, .toml, .csv, .env, .ini | green |
-| config files | .config, .yang, .conf, .cfg, .properties | cyan |
+| data & config | .json, .xml, .yaml, .yml, .toml, .csv, .env, .ini, .config, .yang, .conf, .cfg, .properties | green |
 | web | .html, .htm, .css, .scss, .less, .vue, .svelte | light blue |
 | source code | .ts, .js, .jsx, .tsx, .c, .cpp, .h, .cs, .go, .rs, .java, .kt, .swift, .zig, .sql | blue-gray |
 | documentation | .md, .rst, .adoc, .tex, .mdx | purple |
@@ -35,7 +33,7 @@ renders something rather than throwing an error.
 | sakura | .sakura | pink |
 | ellipsis | ... | white |
 | comments | # | gray |
-| (default) | | gray |
+| plain text & everything else | .txt, .log, unknown extensions, ... | white |
 
 ## Valid examples
 
@@ -167,16 +165,19 @@ These all used to be errors and now just render:
 - **Inconsistent indentation** — 2 spaces here, 6 there; depth is relative.
 - **Mixed tabs and spaces** — treated interchangeably.
 - **Multiple root folders** — rendered as siblings, no extra syntax needed.
-- **Unusual filename characters** (`< > : " | ? *`) — rendered as-is.
+- **Unusual filename characters** (`< > : " | ? *`, and `#` with no space before it) — rendered as-is.
 
 ## Remaining rules
 
+There are no errors — every input renders. What's left is how entries are
+classified:
+
 - **Empty fence** — renders nothing.
-- **A bare leaf with no extension** is treated as a folder. The exceptions are
-  well-known extensionless files — `README`, `LICENSE`, `Dockerfile`,
-  `Makefile`, `CHANGELOG`, `Gemfile` and similar — which stay files. Anything
-  with a `.extension` is a file.
-- **`...` at the root level** is the one hard error — an ellipsis means "more
-  siblings here", which is meaningless with no parent folder.
+- **A bare leaf with no extension** is treated as a folder, with two
+  exceptions that stay files: the classic build files (`Makefile`,
+  `Dockerfile`, `Gemfile` and friends — any capitalization), and well-known
+  names typed in ALL CAPS (`README`, `LICENSE`, `TODO`, `CHANGELOG`,
+  `VERSION`, ...). Caps signal the intent: `TODO` is a file, `todo` is a
+  folder. Anything with a `.extension` is a file.
 - **Multiple dots in a name** (`archive.tar.gz`) — the last extension wins.
-- **No extension, or an unknown extension** — defaults to gray.
+- **No extension, or an unknown extension** — renders white, like plain text.

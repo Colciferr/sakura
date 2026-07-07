@@ -1,7 +1,6 @@
 import { Plugin } from "obsidian";
 import { tokenize } from "./src/tokenizer";
 import { buildTrees } from "./src/treeBuilder";
-import { validateTrees } from "./src/validator";
 import { renderTrees } from "./src/renderer";
 
 export default class SakuraPlugin extends Plugin {
@@ -12,23 +11,11 @@ export default class SakuraPlugin extends Plugin {
 
       const container = el.createEl("div", { cls: "sakura-container" });
 
-      // Wrap the whole pipeline: Sakura is meant to be forgiving, so an
-      // unexpected failure should surface a friendly message, never a blank
-      // block or a thrown exception.
+      // Sakura has no syntax errors — every input renders. The try/catch is
+      // the safety net for the unexpected: a failure surfaces a friendly
+      // message, never a blank block or a thrown exception.
       try {
-        const tokens = tokenize(source);
-        const { trees, errors: buildErrors } = buildTrees(tokens);
-        const validationErrors = validateTrees(trees);
-        const allErrors = [...buildErrors, ...validationErrors];
-
-        if (allErrors.length > 0) {
-          const errorEl = container.createEl("div", { cls: "sakura-error" });
-          errorEl.setText(
-            allErrors
-              .map(e => `Error${e.line ? ` (line ${e.line})` : ""}: ${e.message}`)
-              .join("\n")
-          );
-        }
+        const trees = buildTrees(tokenize(source));
 
         if (trees.length > 0) {
           // Build the tree as DOM nodes — one <span> per colored segment,

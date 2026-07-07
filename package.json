@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node esbuild.config.mjs",
     "dev": "node esbuild.config.mjs --watch",
-    "test": "ts-node src/tests/tokenizer.test.ts && ts-node src/tests/treeBuilder.test.ts && ts-node src/tests/validator.test.ts && ts-node src/tests/renderer.test.ts"
+    "test": "ts-node src/tests/tokenizer.test.ts && ts-node src/tests/treeBuilder.test.ts && ts-node src/tests/renderer.test.ts"
   },
 
   "repository": {
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "esbuild": "^0.25.0",
-    "obsidian": "latest",
+    "obsidian": "^1.12.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   }

@@ -3,7 +3,7 @@ import { buildTrees } from '../treeBuilder';
 import { renderTrees, RenderLine } from '../renderer';
 import { check, equal, section, summary } from './harness';
 
-const render = (input: string) => renderTrees(buildTrees(tokenize(input)).trees);
+const render = (input: string) => renderTrees(buildTrees(tokenize(input)));
 
 // Flattens a line to plain text (dropping color) for structural assertions.
 const text = (line: RenderLine) => line.map(s => s.text).join('');
@@ -38,7 +38,14 @@ equal('root directory is colored gold', render('home/')[0]![0]!.color, 'gold');
     lastSeg(render('a/\n    pic.PNG')[1]!).color, 'red');
   equal('a tree connector segment carries no color',
     render('a/\n    x.json')[1]![0]!.color, null);
+  equal('an unknown extension defaults to white (gray is comments-only)',
+    lastSeg(render('a/\n    x.xyz')[1]!).color, 'white');
+  equal('a .conf file is colored green (merged config group)',
+    lastSeg(render('a/\n    x.conf')[1]!).color, 'green');
 }
+
+// --- a root-level ellipsis renders like anything else (no errors anywhere) ---
+equal('root-level ellipsis renders', text(render('...')[0]!), '...');
 
 // --- inline comments ---
 {

@@ -8,8 +8,7 @@ section('treeBuilder');
 
 // --- basic structure ---
 {
-  const { trees, errors } = build('home/\n    documents/\n        notes.txt\n    scripts/');
-  equal('no build errors on a basic tree', errors, []);
+  const trees = build('home/\n    documents/\n        notes.txt\n    scripts/');
   equal('one tree produced', trees.length, 1);
   const home = trees[0]!.children[0]!;
   equal('root name', home.name, 'home');
@@ -19,42 +18,48 @@ section('treeBuilder');
 
 // --- slashes optional: a word with children is a directory ---
 {
-  const home = build('home\n    documents\n        notes.txt').trees[0]!.children[0]!;
+  const home = build('home\n    documents\n        notes.txt')[0]!.children[0]!;
   equal('word with children -> directory', home.type, 'directory');
   equal('nested word with children -> directory', home.children[0]!.type, 'directory');
   equal('leaf with an extension -> file', home.children[0]!.children[0]!.type, 'file');
 }
 
-// --- bare extensionless leaves: folder by default, known files stay files ---
+// --- bare extensionless leaves: folder by default. A leaf is a file only
+// when it's a classic build-file name (any case), or a well-known name typed
+// in ALL CAPS — caps signal intent, the word list provides the vocabulary. ---
 {
-  const kids = build('project\n    src\n    dist\n    README\n    LICENSE\n    config.json')
-    .trees[0]!.children[0]!.children;
+  const kids = build(
+    'project\n    src\n    dist\n    README\n    LICENSE\n    TODO\n    todo\n    API\n    readme\n    dockerfile\n    Makefile\n    config.json'
+  )[0]!.children[0]!.children;
   const typeOf = (n: string) => kids.find(k => k.name === n)!.type;
   equal('bare word "src" -> directory', typeOf('src'), 'directory');
   equal('bare word "dist" -> directory', typeOf('dist'), 'directory');
-  equal('known file "README" -> file', typeOf('README'), 'file');
-  equal('known file "LICENSE" -> file', typeOf('LICENSE'), 'file');
+  equal('caps known word "README" -> file', typeOf('README'), 'file');
+  equal('caps known word "LICENSE" -> file', typeOf('LICENSE'), 'file');
+  equal('caps known word "TODO" -> file', typeOf('TODO'), 'file');
+  equal('lowercase known word "todo" -> directory', typeOf('todo'), 'directory');
+  equal('caps unknown word "API" -> directory', typeOf('API'), 'directory');
+  equal('lowercase "readme" -> directory', typeOf('readme'), 'directory');
+  equal('build file "dockerfile" (any case) -> file', typeOf('dockerfile'), 'file');
+  equal('build file "Makefile" -> file', typeOf('Makefile'), 'file');
   equal('"config.json" -> file', typeOf('config.json'), 'file');
 }
 
 // --- extension parsing (case preserved on the node) ---
 equal('file extension is parsed',
-  build('a/\n    x.TXT').trees[0]!.children[0]!.children[0]!.extension, 'TXT');
+  build('a/\n    x.TXT')[0]!.children[0]!.children[0]!.extension, 'TXT');
 
 // --- forgiving indentation ---
-{
-  const { trees, errors } = build('a/\n  b/\n\t\tc.txt\n      d/');
-  equal('messy / mixed indentation produces no errors', errors, []);
-  check('one tree built from messy input', trees.length === 1);
-}
+check('one tree built from messy / mixed indentation',
+  build('a/\n  b/\n\t\tc.txt\n      d/').length === 1);
 
 // --- separator ---
-equal('separator splits input into two trees', build('a/\n---\nb/').trees.length, 2);
+equal('separator splits input into two trees', build('a/\n---\nb/').length, 2);
 
 // --- explicit vs inferred folders ---
 equal('a typed slash is recorded on the node',
-  build('home/').trees[0]!.children[0]!.explicitSlash, true);
+  build('home/')[0]!.children[0]!.explicitSlash, true);
 equal('an inferred folder carries no explicit slash',
-  build('home\n    x').trees[0]!.children[0]!.explicitSlash, false);
+  build('home\n    x')[0]!.children[0]!.explicitSlash, false);
 
 summary();
