@@ -1,45 +1,26 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  // Visit https://aka.ms/tsconfig to read more about this file.
+  // The plugin is bundled by esbuild (see esbuild.config.mjs); this config
+  // drives editor type-checking and the ts-node test scripts only.
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
-    "outDir": "./dist",
-
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
     "types": ["node"],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
 
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    // No tsc emit — esbuild produces main.js, ts-node transpiles tests.
+    "noEmit": true,
 
-    // Stricter Typechecking Options
+    // Stricter type-checking
+    "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
 
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
+    // Recommended options
     "isolatedModules": true,
+    "verbatimModuleSyntax": false,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
-  "exclude": ["obsidian-plugin", "dist"]
+  "include": ["main.ts", "src/**/*.ts"]
 }

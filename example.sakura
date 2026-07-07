@@ -1,20 +1,20 @@
-target: C:\temp
-# This is the main project structure
-root/
-    sub folder/
-        text.txt  # a text file
-        python.py  # main script
-        config.json  -- internal config, don't show
-        config.xml
-    sub folder/
-        settings.yang
-        settings.config
-        ...  # more files here
+# Folders need no trailing slash — a word with items nested under it,
+# or any bare word with no file extension, is treated as a folder
+my-project
+    src
+        index.ts
+        tokenizer.ts
+        renderer.ts
+    docs
+        guide.md
+    tests
+        ...                  # an ellipsis stands in for more files
+    package.json
+    README                   # well-known ALL-CAPS names render as files
+    LICENSE
 ---
-target: root\sub folder
--- this comment should be hidden
-root2/
-    markdown.md  # documentation
-    doc.pdf
-    unknown
-    tree.sakura
+# A second, independent tree
+notes
+    daily
+    ideas
+    archive                  # empty, no slash — still a folder (bare word, no extension)

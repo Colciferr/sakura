@@ -11,7 +11,9 @@ const context = await esbuild.context({
   target: "es2020",
   outfile: "main.js",
   platform: "node",
-  sourcemap: "inline",
+  // Inline sourcemap for dev only — it roughly doubles main.js, and the
+  // release build ships that file to every vault.
+  sourcemap: watch ? "inline" : false,
   treeShaking: true,
 });
 

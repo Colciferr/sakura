@@ -1,7 +1,4 @@
 node_modules/
-dist/
-obsidian-plugin/main.js
-obsidian-plugin/main.d.ts
-obsidian-plugin/main.d.ts.map
-obsidian-plugin/main.js.map
+main.js
 PLAN.md
+tasks/

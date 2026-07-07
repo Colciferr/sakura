@@ -1,63 +1,65 @@
 import { tokenize } from '../tokenizer';
 import { buildTrees } from '../treeBuilder';
+import { check, equal, section, summary } from './harness';
 
-// Test 1: basic tree
-const input1 = `home/
-    documents/
-        notes.txt
-    scripts/
-        program.exe`;
+const build = (input: string) => buildTrees(tokenize(input));
 
-const result1 = buildTrees(tokenize(input1));
-console.log('Test 1 - basic tree:');
-console.log(JSON.stringify(result1, null, 2));
+section('treeBuilder');
 
-// Test 2: target + separator
-const input2 = `target: 'C:/temp'
-root/
-    subdir/
----
-target: 'C:/other'
-shared/
-    games/`;
+// --- basic structure ---
+{
+  const trees = build('home/\n    documents/\n        notes.txt\n    scripts/');
+  equal('one tree produced', trees.length, 1);
+  const home = trees[0]!.children[0]!;
+  equal('root name', home.name, 'home');
+  equal('root is a directory', home.type, 'directory');
+  equal('root has two children', home.children.length, 2);
+}
 
-const result2 = buildTrees(tokenize(input2));
-console.log('\nTest 2 - target + separator:');
-console.log(JSON.stringify(result2, null, 2));
+// --- slashes optional: a word with children is a directory ---
+{
+  const home = build('home\n    documents\n        notes.txt')[0]!.children[0]!;
+  equal('word with children -> directory', home.type, 'directory');
+  equal('nested word with children -> directory', home.children[0]!.type, 'directory');
+  equal('leaf with an extension -> file', home.children[0]!.children[0]!.type, 'file');
+}
 
-// Test 3: ellipsis
-const input3 = `scripts/
-    powershell/
-        hello.ps1
-        ...`;
+// --- bare extensionless leaves: folder by default. A leaf is a file only
+// when it's a classic build-file name (any case), or a well-known name typed
+// in ALL CAPS — caps signal intent, the word list provides the vocabulary. ---
+{
+  const kids = build(
+    'project\n    src\n    dist\n    README\n    LICENSE\n    TODO\n    todo\n    API\n    readme\n    dockerfile\n    Makefile\n    config.json'
+  )[0]!.children[0]!.children;
+  const typeOf = (n: string) => kids.find(k => k.name === n)!.type;
+  equal('bare word "src" -> directory', typeOf('src'), 'directory');
+  equal('bare word "dist" -> directory', typeOf('dist'), 'directory');
+  equal('caps known word "README" -> file', typeOf('README'), 'file');
+  equal('caps known word "LICENSE" -> file', typeOf('LICENSE'), 'file');
+  equal('caps known word "TODO" -> file', typeOf('TODO'), 'file');
+  equal('lowercase known word "todo" -> directory', typeOf('todo'), 'directory');
+  equal('caps unknown word "API" -> directory', typeOf('API'), 'directory');
+  equal('lowercase "readme" -> directory', typeOf('readme'), 'directory');
+  equal('build file "dockerfile" (any case) -> file', typeOf('dockerfile'), 'file');
+  equal('build file "Makefile" -> file', typeOf('Makefile'), 'file');
+  equal('"config.json" -> file', typeOf('config.json'), 'file');
+}
 
-const result3 = buildTrees(tokenize(input3));
-console.log('\nTest 3 - ellipsis:');
-console.log(JSON.stringify(result3, null, 2));
+// --- extension parsing (case preserved on the node) ---
+equal('file extension is parsed',
+  build('a/\n    x.TXT')[0]!.children[0]!.children[0]!.extension, 'TXT');
 
-// Test 4: duplicate target
-const input4 = `target: 'C:/temp'
-target: 'C:/other'
-root/`;
+// --- forgiving indentation ---
+check('one tree built from messy / mixed indentation',
+  build('a/\n  b/\n\t\tc.txt\n      d/').length === 1);
 
-const result4 = buildTrees(tokenize(input4));
-console.log('\nTest 4 - duplicate target:');
-console.log(JSON.stringify(result4.errors, null, 2));
+// --- separator ---
+equal('separator splits input into two trees', build('a/\n---\nb/').length, 2);
 
-// Test 5: target mid-tree
-const input5 = `root/
-    subdir/
-target: 'C:/temp'`;
+// --- explicit vs inferred folders ---
+equal('a typed slash is recorded on the node',
+  build('home/')[0]!.children[0]!.explicitSlash, true);
+equal('an inferred folder carries no explicit slash',
+  build('home\n    x')[0]!.children[0]!.explicitSlash, false);
 
-const result5 = buildTrees(tokenize(input5));
-console.log('\nTest 5 - target mid-tree:');
-console.log(JSON.stringify(result5.errors, null, 2));
-
-// Test 6: empty target
-const input6 = `target: ''
-root/
-    subdir/`;
-
-const result6 = buildTrees(tokenize(input6));
-console.log('\nTest 6 - empty target (should behave as no target):');
-console.log(JSON.stringify(result6.trees[0], null, 2));
+summary();

@@ -3,7 +3,7 @@
   "name": "Sakura Tree Renderer",
   "version": "1.0.1",
   "minAppVersion": "1.0.0",
-  "description": "Renders sakura fenced code blocks as colored ASCII directory trees.",
+  "description": "Renders sakura fenced code blocks as colored directory trees.",
   "author": "Colciferr",
   "authorUrl": "https://github.com/Colciferr",
   "isDesktopOnly": false
