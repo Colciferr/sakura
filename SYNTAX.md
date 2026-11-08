@@ -13,10 +13,10 @@ renders something rather than throwing an error.
 | `<name>/` | no | a trailing `/` explicitly marks a folder | `pictures/` | Optional — folders are detected automatically. A `/` you type is kept in the output; omit it and the folder still renders, just without the slash. Type it to mark an empty folder whose name *looks* like a file. |
 | indentation | no | nest an entry under the line above by indenting it | `    notes.txt` | Tabs or spaces, either one. Widths don't have to be consistent and tabs/spaces may be mixed — Sakura reads depth from *relative* nesting, not exact width. |
 | `<name>.<ext>` | no | a file extension sets the entry's color | `settings.json` | See the color map below. |
-| `#` | no | comment — rendered in gray in the output | `# this is a comment` | Works as a full line or at the end of a line. An inline `#` needs a space before it, so names like `file#1.txt` render as-is. |
-| ` --` | no | hidden comment — removed entirely, never rendered | `notes.txt -- TODO` | Needs a space before `--`. A full line starting with `--` is dropped. |
-| `---` | no | separator between independent trees | | Place between two trees to render them as separate blocks. Three or more dashes work, and trailing text after a space (`--- # part two`) is ignored. |
+| `---` | no | separator between independent trees | | Place between two trees to render them as separate blocks. Three or more dashes work, and trailing text after a space (`--- part two`) is ignored. The other Markdown horizontal rules, `***` and `___`, separate trees too. |
 | `...` | no | ellipsis — stands in for an unspecified number of entries | | Allowed anywhere, as many times as needed. Two or more dots (`..`, `....`) and the unicode `…` (what phones autocorrect `...` into) all count. |
+| `- <name>` | no | a Markdown bullet marker in front of an entry is ignored | `- notes.txt` | `-`, `*`, and `+` followed by a space are all dropped, so an existing bulleted outline becomes a tree just by changing the fence language to `sakura`. |
+| `├── <name>` | no | tree connector glyphs are read as indentation | `│   └── a.ts` | Paste the output of the `tree` command (or any hand-drawn tree using `├── └── │`, or the ASCII forms `\|-- `, `` `-- ``, `+-- `) and it renders as if it had been typed with indentation. The trailing "2 directories, 3 files" summary line is skipped. |
 
 ## File extension color map
 
@@ -32,7 +32,6 @@ renders something rather than throwing an error.
 | documents, archives & media | .pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .odt, .ods, .odp, .zip, .tar, .gz, .7z, .iso, .dmg, .img, .png, .jpg, .jpeg, .gif, .bmp, .ico, .webp, .svg, .mp3, .mp4, .wav | red |
 | sakura | .sakura | pink |
 | ellipsis | ... | white |
-| comments | # | gray |
 | plain text & everything else | .txt, .log, unknown extensions, ... | white |
 
 ## Valid examples
@@ -165,7 +164,11 @@ These all used to be errors and now just render:
 - **Inconsistent indentation** — 2 spaces here, 6 there; depth is relative.
 - **Mixed tabs and spaces** — treated interchangeably.
 - **Multiple root folders** — rendered as siblings, no extra syntax needed.
-- **Unusual filename characters** (`< > : " | ? *`, and `#` with no space before it) — rendered as-is.
+- **Unusual filename characters** (`< > : " | ? *`, `#`, `--`) — rendered as-is.
+- **Non-breaking spaces** — text pasted from a web page, word processor, or chat app often indents with U+00A0 instead of a normal space; it counts as indentation all the same.
+- **Markdown bullets** — a leading `- `, `* `, or `+ ` is dropped, so a bulleted outline is already a valid tree.
+- **Pasted `tree` output** — connector glyphs (`├── └── │`) and their ASCII equivalents are read as indentation, and the "N directories, M files" summary line is skipped.
+- **Hidden folders** — `.git`, `.github`, `.vscode`, `.obsidian` and other leading-dot names are folders, not files with a strange extension.
 
 ## Remaining rules
 
@@ -180,4 +183,14 @@ classified:
   `VERSION`, ...). Caps signal the intent: `TODO` is a file, `todo` is a
   folder. Anything with a `.extension` is a file.
 - **Multiple dots in a name** (`archive.tar.gz`) — the last extension wins.
+  This also means a dotted *folder* name with nothing nested under it
+  (`com.example.app`, `v1.2`, `2024.01`) is read as a file. Give it children
+  or type a trailing slash (`v1.2/`) to make it a folder.
+- **Leading-dot names** (`.github`, `.git`, `.vscode`, `.config`) are hidden
+  folders when the leading dot is the only one. Well-known dotfiles stay files:
+  `.gitignore`, `.gitattributes`, `.editorconfig`, `.npmrc`, `.nvmrc`,
+  `.prettierrc`, `.eslintrc`, `.babelrc`, `.env`, `.htaccess`, `.bashrc`,
+  `.zshrc`, `.profile`, `.vimrc` and friends. A dotfile with a further
+  extension (`.eslintrc.json`, `.env.local`) is an ordinary file, colored by
+  its last extension.
 - **No extension, or an unknown extension** — renders white, like plain text.

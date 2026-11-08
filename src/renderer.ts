@@ -5,7 +5,7 @@ import { SakuraTree, TreeNode } from './treeBuilder';
 // has to know what theme or palette is in use.
 export type ColorName =
   | 'gold' | 'yellow' | 'white' | 'blue' | 'lightblue' | 'bluegray'
-  | 'green' | 'purple' | 'red' | 'pink' | 'gray';
+  | 'green' | 'purple' | 'red' | 'pink';
 
 // One styled piece of a rendered line. A null color means "default text
 // color" — used for the tree connectors (├── └── │).
@@ -20,7 +20,6 @@ export interface RenderSegment {
 export type RenderLine = RenderSegment[];
 
 function getColor(node: TreeNode, isRoot: boolean): ColorName {
-  if (node.type === 'comment') return 'gray';
   if (isRoot && node.type === 'directory') return 'gold';
   if (node.type === 'directory') return 'yellow';
   if (node.type === 'ellipsis') return 'white';
@@ -34,8 +33,7 @@ function getColor(node: TreeNode, isRoot: boolean): ColorName {
   if (['html', 'htm', 'css', 'scss', 'less', 'vue', 'svelte'].includes(ext)) return 'lightblue';
   if (['ts', 'js', 'jsx', 'tsx', 'c', 'cpp', 'h', 'cs', 'go', 'rs', 'java', 'kt', 'swift', 'zig', 'sql'].includes(ext)) return 'bluegray';
   if (ext === 'sakura') return 'pink';
-  // Plain text and anything unrecognized render white — gray is reserved for
-  // comments, so real entries never blend in with annotations.
+  // Plain text and anything unrecognized render white.
   return 'white';
 }
 
@@ -47,19 +45,9 @@ function displayName(node: TreeNode): string {
   return node.type === 'directory' && node.explicitSlash ? node.name + '/' : node.name;
 }
 
-// Builds the styled segments for one node: its name, plus any inline comment.
-function buildLabel(node: TreeNode, color: ColorName): RenderSegment[] {
-  // Comment-only nodes render as "# comment text" in gray
-  if (node.type === 'comment') {
-    const text = node.comment ? `# ${node.comment}` : '#';
-    return [{ text, color: 'gray' }];
-  }
-  // Normal node, optionally followed by an inline comment
-  const segments: RenderSegment[] = [{ text: displayName(node), color }];
-  if (node.comment) {
-    segments.push({ text: `  # ${node.comment}`, color: 'gray' });
-  }
-  return segments;
+// Builds the styled segment for one node's name.
+function buildLabel(node: TreeNode, color: ColorName): RenderSegment {
+  return { text: displayName(node), color };
 }
 
 export function renderTrees(trees: SakuraTree[]): RenderLine[] {
@@ -84,7 +72,7 @@ function renderNode(
   lines: RenderLine[]
 ): void {
   if (isRoot) {
-    lines.push(buildLabel(node, getColor(node, true)));
+    lines.push([buildLabel(node, getColor(node, true))]);
   }
 
   const lastIndex = node.children.length - 1;
@@ -96,7 +84,7 @@ function renderNode(
     // The connector is an uncolored segment; the label carries the color.
     lines.push([
       { text: prefix + connector, color: null },
-      ...buildLabel(child, getColor(child, false)),
+      buildLabel(child, getColor(child, false)),
     ]);
 
     if (child.children.length > 0) {

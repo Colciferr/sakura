@@ -62,4 +62,29 @@ equal('a typed slash is recorded on the node',
 equal('an inferred folder carries no explicit slash',
   build('home\n    x')[0]!.children[0]!.explicitSlash, false);
 
+// --- leading-dot names: hidden folders by default, well-known dotfiles stay
+// files. A dotfile with a further extension is an ordinary file. ---
+{
+  const kids = build(
+    'repo\n    .git\n    .github\n    .vscode\n    .config\n    .gitignore\n    .env\n    .ENV\n    .env.local\n    .eslintrc.json'
+  )[0]!.children[0]!.children;
+  const node = (n: string) => kids.find(k => k.name === n)!;
+  equal('".git" -> directory', node('.git').type, 'directory');
+  equal('".github" -> directory', node('.github').type, 'directory');
+  equal('".vscode" -> directory', node('.vscode').type, 'directory');
+  equal('".config" -> directory', node('.config').type, 'directory');
+  equal('".gitignore" -> file', node('.gitignore').type, 'file');
+  equal('".env" -> file', node('.env').type, 'file');
+  equal('".env" records "env" as its extension', node('.env').extension, 'env');
+  equal('dotfile match is case-insensitive', node('.ENV').type, 'file');
+  equal('".env.local" -> file with extension "local"',
+    [node('.env.local').type, node('.env.local').extension], ['file', 'local']);
+  equal('".eslintrc.json" -> file with extension "json"',
+    [node('.eslintrc.json').type, node('.eslintrc.json').extension], ['file', 'json']);
+}
+equal('a dot-name with children is a directory',
+  build('.github\n    workflows')[0]!.children[0]!.type, 'directory');
+equal('"." (the root `tree` prints) is a directory',
+  build('.\n    src')[0]!.children[0]!.type, 'directory');
+
 summary();

@@ -48,7 +48,6 @@
 .sakura-purple    { color: #ce93d8; }
 .sakura-red       { color: #e57373; }
 .sakura-pink      { color: #f59aff; }
-.sakura-gray      { color: #aaaaaa; }
 
 /* Tree colors — light theme. Deeper, saturated "ink" tones picked to read
    crisply on a light background — chosen for light, not dimmed from dark. */
@@ -62,4 +61,3 @@
 .theme-light .sakura-purple    { color: #7b1fa2; }
 .theme-light .sakura-red       { color: #c62828; }
 .theme-light .sakura-pink      { color: #c2185b; }
-.theme-light .sakura-gray      { color: #888888; }

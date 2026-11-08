@@ -1,5 +1,3 @@
-# Folders need no trailing slash — a word with items nested under it,
-# or any bare word with no file extension, is treated as a folder
 my-project
     src
         index.ts
@@ -8,13 +6,12 @@ my-project
     docs
         guide.md
     tests
-        ...                  # an ellipsis stands in for more files
+        ...
     package.json
-    README                   # well-known ALL-CAPS names render as files
+    README
     LICENSE
 ---
-# A second, independent tree
 notes
     daily
     ideas
-    archive                  # empty, no slash — still a folder (bare word, no extension)
+    archive

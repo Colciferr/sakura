@@ -1,12 +1,11 @@
 import { Token } from "./tokenizer";
 
-export type NodeType = 'directory' | 'file' | 'ellipsis' | 'comment';
+export type NodeType = 'directory' | 'file' | 'ellipsis';
 
 export interface TreeNode {
     type: NodeType;
     name: string;
     extension?: string | undefined;
-    comment?: string | undefined;
     // True only when the author typed a trailing slash. An inferred folder
     // (detected from nesting, or a bare word) leaves this false. The renderer
     // uses it to echo the slash exactly as written, no more.
@@ -29,31 +28,9 @@ export function buildTrees(tokens: Token[]): SakuraTree[] {
     for (const token of tokens) {
         switch (token.type) {
 
-            // Hidden comments and blank lines are skipped
+            // Blank lines are skipped
             case 'BLANK':
                 break;
-
-            // Visible comments are placed in the tree at their depth level
-            case 'COMMENT': {
-                const commentNode: TreeNode = {
-                    type: 'comment',
-                    name: '',
-                    comment: token.comment,
-                    children: []
-                };
-
-                while(stack.length > 0 && stack[stack.length - 1]!.depth >= token.depth) {
-                    stack.pop();
-                }
-
-                if(stack.length === 0) {
-                    currentTree.children.push(commentNode);
-                }
-                else {
-                    stack[stack.length - 1]?.node.children.push(commentNode);
-                }
-                break;
-            }
 
             // seals the current tree, pushes it, & resets both tree and stack for the next block
             case 'SEPARATOR':
@@ -77,7 +54,6 @@ export function buildTrees(tokens: Token[]): SakuraTree[] {
                 const node: TreeNode = {
                     type: nodeType,
                     name: token.name,
-                    comment: token.comment,
                     explicitSlash: token.type === 'DIRECTORY',
                     children: []
                 };
@@ -136,6 +112,19 @@ const BUILD_FILES = new Set([
     'brewfile', 'caddyfile', 'justfile', 'berksfile', 'capfile', 'podfile',
 ]);
 
+// Leading-dot names with no other dot. In a project tree these are far more
+// often hidden FOLDERS (.git, .github, .vscode, .obsidian, .idea, .config)
+// than files, so that is the default — but these well-known configuration
+// files are the exception and stay files. The name minus its dot is recorded
+// as the extension so `.env` still colors like a .env file.
+const KNOWN_DOTFILES = new Set([
+    'gitignore', 'gitattributes', 'gitmodules', 'gitkeep', 'gitconfig',
+    'dockerignore', 'npmignore', 'eslintignore', 'prettierignore',
+    'editorconfig', 'npmrc', 'nvmrc', 'yarnrc', 'prettierrc', 'eslintrc',
+    'babelrc', 'env', 'envrc', 'htaccess', 'htpasswd',
+    'bashrc', 'bash_profile', 'zshrc', 'zprofile', 'profile', 'vimrc',
+]);
+
 // ALL-CAPS = uppercase-only and contains at least one letter (so digits or
 // punctuation alone don't qualify).
 function isAllCaps(name: string): boolean {
@@ -145,6 +134,9 @@ function isAllCaps(name: string): boolean {
 // Resolves a node's final type now that the whole tree is built. A token
 // tentatively tagged 'file' (no trailing slash) is reclassified here:
 //   - has children              -> directory (things are nested under it)
+//   - leading dot, no other dot -> directory (.git, .github — hidden folder),
+//                                  except well-known dotfiles (.gitignore,
+//                                  .env, ...) which stay files
 //   - has a .extension          -> file     (extension recorded for coloring)
 //   - classic build-file name   -> file     (Makefile, Dockerfile, ...)
 //   - ALL-CAPS well-known name  -> file     (README, LICENSE, TODO, ...)
@@ -158,7 +150,19 @@ function finalizeNode(node: TreeNode): void {
         }
         else {
             const parts = node.name.split('.');
-            if(parts.length > 1) {
+            // ".github" splits into ['', 'github']: the only dot is the
+            // leading one, so this is a dot-name, not a name with an extension.
+            const isDotName = node.name.startsWith('.') && parts.length === 2;
+            if(isDotName) {
+                const rest = parts[1] ?? '';
+                if(KNOWN_DOTFILES.has(rest.toLowerCase())) {
+                    node.extension = rest;
+                }
+                else {
+                    node.type = 'directory';
+                }
+            }
+            else if(parts.length > 1) {
                 node.extension = parts[parts.length - 1] ?? '';
             }
             else {

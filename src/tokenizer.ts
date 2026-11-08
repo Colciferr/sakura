@@ -4,7 +4,6 @@ export type TokenType =
   | 'FILE'
   | 'SEPARATOR'
   | 'ELLIPSIS'
-  | 'COMMENT'
   | 'BLANK'
 
 // The shape of a single token
@@ -12,47 +11,51 @@ export interface Token {
     type: TokenType;
     raw: string;        // original line, untouched
     depth: number;       // indent level (0 = root)
-    name: string;    // cleaned name, no indent or trailing comment
-    comment?: string | undefined;  // visible inline comment text (from #)
+    name: string;    // cleaned name, no indent
     line: number;
 }
 
 // Measures the visual width of a line's leading whitespace.
-// Tabs advance to the next 4-column tab stop; spaces count as 1.
+// Tabs advance to the next 4-column tab stop; every other whitespace
+// character counts as 1 — that includes the non-breaking space (U+00A0) and
+// the ideographic space (U+3000), which show up when text is pasted from a
+// web page, a word processor, or a chat app. Without this, such lines would
+// look indented but measure as width 0 and all collapse to the root level.
 // Measuring width (rather than counting a fixed indent unit) is what lets
 // inconsistent indent widths and mixed tabs/spaces resolve sensibly.
 function indentWidth(line: string): number {
   let width = 0;
   for (const ch of line) {
     if (ch === '\t') width += 4 - (width % 4);
-    else if (ch === ' ') width += 1;
+    else if (/\s/.test(ch)) width += 1;
     else break;
   }
   return width;
 }
 
-// Strips trailing inline comments from a name.
-// # comments are visible (preserved as comment text), -- comments are hidden (discarded).
-// Both markers require a leading space, so names like my--file.txt or file#1.txt
-// pass through untouched.
-function stripComment(text: string): { name: string; comment?: string | undefined } {
-  // Hidden comment: drop the tail, then re-parse what's left — a visible
-  // # comment before the hidden marker must still be picked up.
-  const hiddenIdx = text.indexOf(' --');
-  if (hiddenIdx !== -1) {
-    return stripComment(text.slice(0, hiddenIdx));
-  }
-  // Visible comment: strip from name, preserve text
-  const commentIdx = text.indexOf(' #');
-  if (commentIdx !== -1) {
-    const comment = text.slice(commentIdx + 2).trim();
-    return {
-      name: text.slice(0, commentIdx).trim(),
-      comment: comment || undefined,
-    };
-  }
-  return { name: text.trim() };
+// Pasted output of the `tree` command (or any hand-drawn ASCII tree) carries
+// its structure in connector glyphs rather than indentation:
+//     repo
+//     ├── src
+//     │   └── a.ts
+//     └── docs
+// Each 4-character group before the connector (`│   `, `|   `, or four
+// spaces) is one nesting level, and the connector itself (`├── `, `└── `, or
+// the ASCII forms `|-- `, `` `-- ``, `+-- `, `\-- `) is one more. Replacing the
+// whole prefix with the same number of spaces turns it into ordinary
+// indentation, so the relative-depth logic below needs no special case.
+const TREE_PREFIX = /^((?:[│|]\s{3}|\s{4})*)([├└]─{2}|[|`+\\]-{2})(\s|$)/;
+
+function normalizeTreeGlyphs(line: string): string {
+  const match = TREE_PREFIX.exec(line);
+  if (!match) return line;
+  const prefix = match[0];
+  return ' '.repeat(prefix.length) + line.slice(prefix.length);
 }
+
+// The summary line `tree` prints last ("3 directories, 2 files"). It is not
+// an entry, so it is skipped like a blank line when a whole tree is pasted.
+const TREE_SUMMARY = /^\d+ director(y|ies)(, \d+ files?)?$/;
 
 // Main tokenizer function
 export function tokenize(input: string): Token[] {
@@ -84,51 +87,40 @@ export function tokenize(input: string): Token[] {
 
   for (let i = 0; i < lines.length; i++) {
       const raw = lines[i]!;
-      const trimmed = raw.trim();
+      // Tree connector glyphs become indentation before anything else looks
+      // at the line, so a pasted `tree` is read exactly like a typed one.
+      const normalized = normalizeTreeGlyphs(raw);
+      const trimmed = normalized.trim();
 
-    // BLANK
-    if (trimmed === '') {
+    // BLANK — also the `tree` summary line, which carries no entry.
+    if (trimmed === '' || TREE_SUMMARY.test(trimmed)) {
       tokens.push({ type: 'BLANK', raw, depth: 0, name: '', line: i + 1  });
       continue;
     }
 
     // SEPARATOR - ends the current tree; reset indentation for the next one.
-    // Checked before the hidden-comment rule so "--- # note" or "----" still
-    // separate trees instead of vanishing: three or more dashes, alone or
-    // followed by whitespace (any trailing text is ignored like a comment).
-    if (/^-{3,}(\s|$)/.test(trimmed)) {
+    // Three or more dashes, alone or followed by whitespace — any trailing
+    // text is ignored, so "----" or "--- part two" still separate trees.
+    // The other two Markdown horizontal rules, *** and ___, work the same way.
+    if (/^(-{3,}|\*{3,}|_{3,})(\s|$)/.test(trimmed)) {
       tokens.push({ type: 'SEPARATOR', raw, depth: 0, name: '---', line: i + 1  });
       indentStack = [];
       continue;
     }
 
-    // HIDDEN COMMENT - full line starting with -- (not rendered)
-    if (trimmed.startsWith('--')) {
-      tokens.push({ type: 'BLANK', raw, depth: 0, name: '', line: i + 1 });
-      continue;
-    }
-
     // Every remaining line type carries a depth derived from its indentation
-    const depth = resolveDepth(indentWidth(raw));
+    const depth = resolveDepth(indentWidth(normalized));
 
-    // VISIBLE COMMENT - full line starting with # (rendered in output).
-    // A trailing ` --` hidden part is dropped here too — "never rendered"
-    // holds on comment lines just like everywhere else.
-    if (trimmed.startsWith('#')) {
-      let commentText = trimmed.slice(1);
-      const hiddenIdx = commentText.indexOf(' --');
-      if (hiddenIdx !== -1) commentText = commentText.slice(0, hiddenIdx);
-      commentText = commentText.trim();
-      tokens.push({ type: 'COMMENT', raw, depth, name: '', comment: commentText || undefined, line: i + 1 });
-      continue;
-    }
-
-    const { name, comment } = stripComment(trimmed);
+    // A Markdown bullet marker (`- `, `* `, `+ `) is dropped so an existing
+    // bulleted outline becomes a tree just by changing the fence language.
+    // The indentation was measured above, before the marker, so nesting is
+    // unaffected. A bare `-` or `*` with nothing after it is kept as a name.
+    const name = trimmed.replace(/^[-*+]\s+/, '');
 
     // ELLIPSIS - the keyword is '...', but 2+ dots and the unicode … (what
     // iOS autocorrects "..." into) are accepted and normalized to it.
     if (/^(\.{2,}|…)$/.test(name)) {
-      tokens.push({ type: 'ELLIPSIS', raw, depth, name: '...', comment, line: i + 1  });
+      tokens.push({ type: 'ELLIPSIS', raw, depth, name: '...', line: i + 1  });
       continue;
     }
 
@@ -136,13 +128,13 @@ export function tokenize(input: string): Token[] {
     // stripped from the stored name; the renderer re-adds it so output looks
     // the same whether or not the slash was typed.
     if (name.endsWith('/')) {
-      tokens.push({ type: 'DIRECTORY', raw, depth, name: name.replace(/\/+$/, ''), comment, line: i + 1  });
+      tokens.push({ type: 'DIRECTORY', raw, depth, name: name.replace(/\/+$/, ''), line: i + 1  });
       continue;
     }
 
     // FILE - anything else. May still be promoted to a directory by the
     // tree builder if it turns out to have children nested under it.
-    tokens.push({ type: 'FILE', raw, depth, name, comment, line: i + 1  });
+    tokens.push({ type: 'FILE', raw, depth, name, line: i + 1  });
   }
 
   return tokens;
