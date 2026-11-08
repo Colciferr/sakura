@@ -28,6 +28,22 @@ jobs:
             exit 1
           fi
 
+      # Every release ships a description. The notes for a version are the
+      # body of the matching "## <version>" section in CHANGELOG.md; a tag
+      # with no section fails here, before anything is built or published.
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          version="${{ github.ref_name }}"
+          awk -v v="$version" '
+            /^## / { if (found) exit; found = ($2 == v); next }
+            found  { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "CHANGELOG.md has no '## $version' section. Add release notes before tagging."
+            exit 1
+          fi
+          echo "Release notes:"; cat RELEASE_NOTES.md
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -50,9 +66,12 @@ jobs:
             manifest.json
             styles.css
 
+      # body_path supplies the hand-written notes; generate_release_notes
+      # appends GitHub's contributor/changelog links after them.
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: RELEASE_NOTES.md
           generate_release_notes: true
           files: |
             main.js
