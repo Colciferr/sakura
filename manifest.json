@@ -1,7 +1,7 @@
 {
   "id": "sakura",
   "name": "Sakura Tree Renderer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "minAppVersion": "1.0.0",
   "description": "Renders sakura fenced code blocks as colored directory trees.",
   "author": "Colciferr",

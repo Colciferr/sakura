@@ -9,7 +9,7 @@ export default class SakuraPlugin extends Plugin {
       // Style the Obsidian-provided wrapper to match our dark panel
       el.addClass("sakura-wrapper");
 
-      const container = el.createEl("div", { cls: "sakura-container" });
+      const container = el.createDiv({ cls: "sakura-container" });
 
       // Sakura has no syntax errors — every input renders. The try/catch is
       // the safety net for the unexpected: a failure surfaces a friendly
@@ -35,7 +35,7 @@ export default class SakuraPlugin extends Plugin {
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        container.createEl("div", {
+        container.createDiv({
           cls: "sakura-error",
           text: `Sakura could not render this block: ${message}`,
         });
