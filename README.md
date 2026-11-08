@@ -11,8 +11,6 @@ code block and Sakura renders it as a colored directory tree.
 
 ![Simple example of valid input and expected output.](./images/simple_example.png)
 
-![Multi-tree example.](./images/less_simple_example.png)
-
 ## Install
 
 ### Obsidian Community Plugins
