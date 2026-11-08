@@ -35,9 +35,8 @@ home
 ```
 ````
 
-Folders are detected from nesting (no trailing slash
-required), indentation widths don't have to be consistent, and tabs and spaces
-can mix. You can also paste the output of the `tree` command, or a Markdown
+Folders are detected from nesting, indentation widths don't have to be consistent, and you can mix tabs with spaces. 
+You can also paste the output of the `tree` command, or a Markdown
 bulleted list, straight into the block and it renders as-is. See the full
 reference below.
 
